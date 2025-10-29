@@ -1,11 +1,4 @@
-import {
-  Database,
-  Zap,
-  Shield,
-  Package,
-  TestTube,
-  Sparkles,
-} from "lucide-react";
+import { Rocket, Code2, Zap, Shield, Clock, Users, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,44 +9,52 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { getUser } from "@/lib/auth";
+import { signOut as signOutAction } from "@/app/auth/behaviors/signout/actions/signout";
 
-export default function Home() {
+async function handleSignOut() {
+  "use server";
+  await signOutAction();
+}
+
+export default async function HomePage() {
+  const { user } = await getUser();
   const features = [
     {
-      icon: Zap,
-      title: "Next.js 16",
+      icon: Rocket,
+      title: "Ship Faster",
       description:
-        "Built on the latest Next.js with React 19, leveraging cutting-edge features and performance optimizations.",
+        "Stop wasting weeks on setup. Start building your product immediately with everything configured and ready to go.",
     },
     {
-      icon: Database,
-      title: "Database Ready",
+      icon: Code2,
+      title: "Developer First",
       description:
-        "Drizzle ORM with SQLite for development and Turso support for production. Type-safe queries out of the box.",
-    },
-    {
-      icon: TestTube,
-      title: "Testing Included",
-      description:
-        "Vitest for unit testing and Playwright for E2E tests. Write reliable code with confidence.",
-    },
-    {
-      icon: Package,
-      title: "Bun Runtime",
-      description:
-        "Lightning-fast package manager and runtime. Install dependencies and run scripts in milliseconds.",
+        "Built with modern TypeScript, comprehensive testing suite, and best practices baked in from day one.",
     },
     {
       icon: Shield,
-      title: "Type Safe",
+      title: "Secure by Default",
       description:
-        "Full TypeScript support with strict type checking. Catch errors before they reach production.",
+        "Authentication with Better Auth, type-safe database queries, and security best practices included out of the box.",
     },
     {
-      icon: Sparkles,
-      title: "Modern UI",
+      icon: Zap,
+      title: "Lightning Fast",
       description:
-        "shadcn/ui components with Tailwind CSS. Build beautiful interfaces with accessible components.",
+        "Powered by Bun runtime and Next.js 16. Experience blazing fast builds, installs, and hot reload.",
+    },
+    {
+      icon: Clock,
+      title: "Save Time",
+      description:
+        "Skip the boring setup work. Authentication, database, testing, and UI components are already integrated.",
+    },
+    {
+      icon: Users,
+      title: "Production Ready",
+      description:
+        "Battle-tested stack used by developers to launch MVPs, SaaS products, and side projects.",
     },
   ];
 
@@ -61,8 +62,8 @@ export default function Home() {
     "Next.js 16",
     "React 19",
     "TypeScript",
+    "Better Auth",
     "Drizzle ORM",
-    "SQLite",
     "Vitest",
     "Playwright",
     "Bun",
@@ -72,6 +73,25 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black">
+      {user && (
+        <header className="border-b border-zinc-200 dark:border-zinc-800">
+          <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex justify-end">
+              <form action={handleSignOut}>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="sm"
+                  className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </form>
+            </div>
+          </div>
+        </header>
+      )}
       <main className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-24">
           <section className="space-y-8 text-center">
@@ -81,18 +101,18 @@ export default function Home() {
 
             <div className="space-y-4">
               <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
-                Next.js Web Template
+                Start Building, Not Configuring
               </h1>
               <p className="mx-auto max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-                A modern, type-safe web application starter with database
-                integration, testing infrastructure, and beautiful UI
-                components. Ship faster with confidence.
+                A complete Next.js starter for developers who want to ship fast.
+                Authentication, database, testing, and beautiful UI included.
+                Focus on your product, not the setup.
               </p>
             </div>
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" className="w-full sm:w-auto" asChild>
-                <Link href="/auth/signin">Get Started</Link>
+                <Link href="/auth/signup">Get Started</Link>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 View Documentation
@@ -166,7 +186,9 @@ export default function Home() {
               Get started in minutes with our comprehensive setup guide
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg">Start Building</Button>
+              <Button size="lg" asChild>
+                <Link href="/auth/signup">Start Building</Link>
+              </Button>
               <Button size="lg" variant="ghost">
                 Learn More
               </Button>

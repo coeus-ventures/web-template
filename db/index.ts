@@ -1,10 +1,10 @@
-import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/libsql';
-import * as schema from './schema';
-import { createClient } from '@libsql/client';
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
+import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/libsql";
+import * as schema from "./schema";
+import { createClient } from "@libsql/client";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
-config({ path: '.env' });
+config({ path: ".env" });
 
 // Reuse DB instance to avoid too many connections in dev HMR
 declare global {
@@ -32,26 +32,26 @@ function createTursoDb() {
 // Environment-based database selection
 function createDbInstance() {
   // Check for test environment via custom env var since Next.js overrides NODE_ENV
-  const isTestEnv = process.env.USE_TEST_DB === 'true';
-  const environment = process.env.NODE_ENV || 'development';
+  const isTestEnv = process.env.USE_TEST_DB === "true";
+  const environment = process.env.NODE_ENV || "development";
 
   if (isTestEnv) {
     return createSqliteDb(process.env.DATABASE_URL_TEST!);
   }
 
   switch (environment) {
-    case 'production':
+    case "production":
       return createTursoDb();
-    case 'test':
+    case "test":
       return createSqliteDb(process.env.DATABASE_URL_TEST!);
-    case 'development':
+    case "development":
     default:
       return createSqliteDb(process.env.DATABASE_URL_DEVELOPMENT!);
   }
 }
 
 // Force refresh if we're switching to test DB
-const shouldUseTestDb = process.env.USE_TEST_DB === 'true';
+const shouldUseTestDb = process.env.USE_TEST_DB === "true";
 const currentDbIsTest = global.dbIsTest === true;
 
 if (shouldUseTestDb !== currentDbIsTest) {
