@@ -119,12 +119,28 @@ export const TokenService = {
   async invalidateTokensForEmail(email: string): Promise<number> {
     const now = new Date();
 
-    const result = await db
-      .update(authTokens)
-      .set({ consumedAt: now })
-      .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
+    try {
+      // First, count how many tokens will be updated
+      const tokensToUpdate = await db
+        .select()
+        .from(authTokens)
+        .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
 
-    return result.rowsAffected || 0;
+      if (tokensToUpdate.length === 0) {
+        return 0;
+      }
+
+      // Perform the update
+      await db
+        .update(authTokens)
+        .set({ consumedAt: now })
+        .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
+
+      return tokensToUpdate.length;
+    } catch (error) {
+      console.error("Error invalidating tokens:", error);
+      throw error;
+    }
   },
 
   /**

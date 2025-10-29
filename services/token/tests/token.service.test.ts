@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { PreDB } from "@/lib/b-test/predb";
 import { PostDB } from "@/lib/b-test/postdb";
 import { authTokens, magicLinks } from "@/db/schema";
@@ -493,6 +493,59 @@ describe("TokenService", () => {
       );
 
       expect(count).toBe(0);
+    });
+
+    it("should handle timestamp serialization correctly (simulating production error)", async () => {
+      const now = new Date();
+      const futureExpiry = new Date(now.getTime() + 10 * 60 * 1000);
+
+      await PreDB(testDb, schema, {
+        auth_tokens: [
+          {
+            token: "error-test-token",
+            email: "test@example.com",
+            callbackUrl: null,
+            uaHash: null,
+            expiresAt: futureExpiry,
+            consumedAt: null,
+            createdAt: now,
+          },
+        ],
+      });
+
+      // This test simulates the production error where timestamp might be serialized incorrectly
+      // Error shows: params: 1761777476,test@example.com
+      // The timestamp appears as a number instead of Date object
+      try {
+        const count = await TokenService.invalidateTokensForEmail(
+          "test@example.com"
+        );
+
+        expect(count).toBe(1);
+
+        // Verify the consumedAt was set correctly as Date
+        const tokens = await testDb
+          .select()
+          .from(authTokens)
+          .where(eq(authTokens.token, "error-test-token"));
+
+        expect(tokens).toHaveLength(1);
+        expect(tokens[0].consumedAt).toBeInstanceOf(Date);
+        expect(tokens[0].consumedAt).not.toBeNull();
+
+        // Verify it's a valid recent timestamp (within last minute)
+        const consumedTime = tokens[0].consumedAt!;
+        const timeDiff = Math.abs(consumedTime.getTime() - now.getTime());
+        expect(timeDiff).toBeLessThan(60 * 1000); // Should be within 1 minute
+      } catch (error) {
+        // Log detailed error info to help debug
+        console.error("Error in timestamp serialization test:", error);
+        if (error instanceof Error) {
+          console.error("Error message:", error.message);
+          console.error("Error stack:", error.stack);
+        }
+        throw error;
+      }
     });
   });
 
