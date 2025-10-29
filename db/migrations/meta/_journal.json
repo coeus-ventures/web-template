@@ -8,6 +8,13 @@
       "when": 1761749675365,
       "tag": "0000_numerous_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1761757114546,
+      "tag": "0001_young_amphibian",
+      "breakpoints": true
     }
   ]
 }
