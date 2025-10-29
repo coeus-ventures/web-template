@@ -20,71 +20,61 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
     redirect(redirectURL || HOME_URL);
   }
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 bg-dotted-grid relative">
-      {/* Construction elements scattered around */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-        <div className="absolute top-40 right-20 w-16 h-16 border-2 border-dashed border-blue-500 rotate-45"></div>
-        <div className="absolute top-1/3 right-1/3 w-8 h-8 border border-dashed border-orange-500 rounded-full animate-[dot-fade_3s_ease-in-out_infinite]"></div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black">
       {/* Navigation */}
-      <nav className="relative z-10 flex justify-between items-center p-6 max-w-6xl mx-auto border-b border-dashed border-gray-300">
-        <div className="text-2xl font-mono font-bold tracking-tight text-gray-900 relative">
-          <span className="bg-yellow-200 px-2 py-1 text-sm absolute -top-6 -left-2 rotate-2 font-normal">
-            starter template
-          </span>
-          <Link href="/">{APP_NAME}</Link>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-mono text-gray-600">Already have an account?</span>
-          <Link 
-            href={`/auth/signin${redirectURL ? `?redirectTo=${encodeURIComponent(redirectURL)}` : ''}`}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors border border-dashed border-gray-400 hover:border-gray-600"
-          >
-            Sign in
-          </Link>
+      <nav className="border-b border-zinc-200 dark:border-zinc-800">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+              <Link href="/">{APP_NAME}</Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">Already have an account?</span>
+              <Link
+                href={`/auth/signin${redirectURL ? `?redirectTo=${encodeURIComponent(redirectURL)}` : ''}`}
+                className="px-4 py-2 text-sm font-medium text-zinc-900 dark:text-zinc-50 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-md transition-colors"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
         </div>
       </nav>
 
       {/* Sign Up Form Container */}
-      <main className="relative z-10 flex flex-col items-center justify-center w-full px-6 pt-16 pb-24">
-        {/* Construction badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-dashed border-amber-500 bg-amber-50 mb-8">
-          <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-          <span className="text-sm font-mono text-amber-800">This is a placeholder for your Signup Page. Customize it!</span>
-        </div>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-center w-full pt-16 pb-24">
+          {/* Info badge */}
+          <div className="inline-block rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-sm mb-8">
+            <span className="text-zinc-700 dark:text-zinc-300">This is a placeholder for your Signup Page. Customize it!</span>
+          </div>
 
-        <div className="w-full max-w-md border-2 border-dashed border-gray-400 bg-white/50 backdrop-blur-sm relative p-8 md:p-10">
-          <span className="text-xs font-mono text-gray-400 absolute top-2 left-2">SIGNUP_FORM</span>
-          
-          <div className="text-center mb-8 mt-4">
-            <div className="bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center relative py-6 mb-4">
-              <span className="text-sm font-mono text-gray-500 absolute top-2 left-2">H1</span>
-              <h1 className="text-3xl font-bold font-mono text-gray-700">
-                Create Account
-              </h1>
+          <div className="w-full max-w-md">
+            <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 p-8 md:p-10">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+                  Create Account
+                </h1>
+              </div>
+              <SignUpForm redirectURL={redirectURL || HOME_URL} />
+            </div>
+
+            <div className="mt-8 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-900">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 text-center">
+                By creating an account, you agree to our{' '}
+                <Link href="/terms" className="underline hover:text-zinc-900 dark:hover:text-zinc-50 font-medium">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="underline hover:text-zinc-900 dark:hover:text-zinc-50 font-medium">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
             </div>
           </div>
-          <SignUpForm redirectURL={redirectURL || HOME_URL} />
-        </div>
-        
-        <div className="mt-8 border border-dashed border-gray-300 rounded-lg p-4 bg-white/30 relative max-w-md">
-          <span className="text-xs font-mono text-gray-400 absolute top-1 left-2">LEGAL</span>
-          <p className="text-xs font-mono text-gray-600 text-center mt-4">
-            By creating an account, you agree to our{' '}
-            <Link href="/terms" className="underline hover:text-gray-900">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="underline hover:text-gray-900">
-              Privacy Policy
-            </Link>
-            .
-          </p>
         </div>
       </main>
-
-      {/* Keyframes for blob animation */}
     </div>
   );
 }

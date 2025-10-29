@@ -24,7 +24,9 @@ describe("validateToken action", () => {
       callbackUrl: "/dashboard",
     });
     expect(result.error).toBeUndefined();
-    expect(TokenService.validateAndConsume).toHaveBeenCalledWith("valid-token-123");
+    expect(TokenService.validateAndConsume).toHaveBeenCalledWith(
+      "valid-token-123"
+    );
   });
 
   it("should return error for expired token", async () => {

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TokenService } from "@/services/token.service";
-import { MagicLink } from "@/models/magic-link";
 import { auth, getUser } from "@/lib/auth";
 import { randomUUID } from "crypto";
-
+import { magicLinks } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
   const redirectTo = url.searchParams.get("redirectTo");
-
 
   const { user } = await getUser();
 
@@ -79,9 +79,36 @@ export async function GET(req: NextRequest) {
 
     // Retrieve the captured magic link URL with retry mechanism
     // This handles potential write lag between the sendMagicLink handler and our read
-    const magicLink = await MagicLink.findByCidWithRetry(cid, 5, 50);
+    const maxRetries = 5;
+    const delayMs = 50;
 
-    if (!magicLink) {
+    let magicLinkRecord = null;
+
+    for (let i = 0; i < maxRetries && !magicLinkRecord; i++) {
+      if (i > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+
+      const results = await db
+        .select()
+        .from(magicLinks)
+        .where(eq(magicLinks.cid, cid))
+        .limit(1);
+
+      if (results.length > 0) {
+        magicLinkRecord = results[0];
+
+        // Check if expired
+        const now = new Date();
+        if (magicLinkRecord.expiresAt <= now) {
+          return NextResponse.redirect(
+            new URL("/auth/signin?e=link_expired", req.url)
+          );
+        }
+      }
+    }
+
+    if (!magicLinkRecord) {
       return NextResponse.redirect(
         new URL("/auth/signin?e=link_generation_failed", req.url)
       );
@@ -89,7 +116,7 @@ export async function GET(req: NextRequest) {
 
     // Redirect the user to BetterAuth's verification URL
     // This will complete the authentication and establish a session
-    return NextResponse.redirect(magicLink.verifyUrl);
+    return NextResponse.redirect(magicLinkRecord.verifyUrl);
   } catch (error) {
     console.error("Error during magic link flow:", error);
     return NextResponse.redirect(
