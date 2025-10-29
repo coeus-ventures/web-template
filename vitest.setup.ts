@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { config } from "dotenv";
 
 // Load environment variables
-config();
+config({ path: '.env', quiet: true });
 
 // Database setup and cleanup for tests
 import { beforeAll } from "vitest";
