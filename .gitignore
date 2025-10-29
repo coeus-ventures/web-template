@@ -9,7 +9,11 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-bun.lockb
+
+# Lock files from other package managers (we use bun)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # testing
 /coverage

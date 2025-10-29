@@ -97,7 +97,8 @@ describe('Tester Service', () => {
     });
 
     it('should evaluate condition using diff between snapshot and current state', async () => {
-      await tester.snapshot();
+      await tester.snapshot(); // First snapshot (before)
+      await tester.snapshot(); // Second snapshot (after) - needed for diff
       const result = await tester.assert('page has h1 element');
 
       expect(result).toBe(true);
@@ -117,13 +118,15 @@ describe('Tester Service', () => {
     });
 
     it('should compare stored snapshot with current page state', async () => {
-      await tester.snapshot();
+      await tester.snapshot(); // First snapshot (before)
 
       // Modify the page content
       await page.evaluate(() => {
         const h1 = document.querySelector('h1');
         if (h1) h1.textContent = 'Modified Page';
       });
+
+      await tester.snapshot(); // Second snapshot (after) - captures changes
 
       const result = await tester.diff();
       expect(result).toBeDefined();
@@ -154,6 +157,17 @@ describe('Tester Service', () => {
           finishReason: 'stop',
           usage: {},
         } as any);
+
+      // Take initial snapshot so waitFor has a before state
+      await tester.snapshot();
+
+      // Simulate page change after a delay (waitFor polls until page changes)
+      setTimeout(async () => {
+        await page.evaluate(() => {
+          const p = document.querySelector('p');
+          if (p) p.textContent = 'Content changed!';
+        });
+      }, 600);
 
       const result = await tester.waitFor('element is visible', 2000);
       expect(result).toBe(true);
