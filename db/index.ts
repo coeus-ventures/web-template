@@ -4,7 +4,7 @@ import * as schema from "./schema";
 import { createClient } from "@libsql/client";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
-config({ path: ".env" });
+config({ path: ".env", quiet: true });
 
 // Reuse DB instance to avoid too many connections in dev HMR
 declare global {
