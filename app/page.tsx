@@ -1,6 +1,19 @@
-import { Database, Zap, Shield, Package, TestTube, Sparkles } from "lucide-react";
+import {
+  Database,
+  Zap,
+  Shield,
+  Package,
+  TestTube,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
@@ -8,32 +21,38 @@ export default function Home() {
     {
       icon: Zap,
       title: "Next.js 16",
-      description: "Built on the latest Next.js with React 19, leveraging cutting-edge features and performance optimizations.",
+      description:
+        "Built on the latest Next.js with React 19, leveraging cutting-edge features and performance optimizations.",
     },
     {
       icon: Database,
       title: "Database Ready",
-      description: "Drizzle ORM with SQLite for development and Turso support for production. Type-safe queries out of the box.",
+      description:
+        "Drizzle ORM with SQLite for development and Turso support for production. Type-safe queries out of the box.",
     },
     {
       icon: TestTube,
       title: "Testing Included",
-      description: "Vitest for unit testing and Playwright for E2E tests. Write reliable code with confidence.",
+      description:
+        "Vitest for unit testing and Playwright for E2E tests. Write reliable code with confidence.",
     },
     {
       icon: Package,
       title: "Bun Runtime",
-      description: "Lightning-fast package manager and runtime. Install dependencies and run scripts in milliseconds.",
+      description:
+        "Lightning-fast package manager and runtime. Install dependencies and run scripts in milliseconds.",
     },
     {
       icon: Shield,
       title: "Type Safe",
-      description: "Full TypeScript support with strict type checking. Catch errors before they reach production.",
+      description:
+        "Full TypeScript support with strict type checking. Catch errors before they reach production.",
     },
     {
       icon: Sparkles,
       title: "Modern UI",
-      description: "shadcn/ui components with Tailwind CSS. Build beautiful interfaces with accessible components.",
+      description:
+        "shadcn/ui components with Tailwind CSS. Build beautiful interfaces with accessible components.",
     },
   ];
 
@@ -51,7 +70,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black">
+    <div className="min-h-screen bg-linear-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black">
       <main className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-24">
           <section className="space-y-8 text-center">
@@ -64,8 +83,9 @@ export default function Home() {
                 Next.js Web Template
               </h1>
               <p className="mx-auto max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-                A modern, type-safe web application starter with database integration,
-                testing infrastructure, and beautiful UI components. Ship faster with confidence.
+                A modern, type-safe web application starter with database
+                integration, testing infrastructure, and beautiful UI
+                components. Ship faster with confidence.
               </p>
             </div>
 
@@ -93,7 +113,10 @@ export default function Home() {
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <Card key={index} className="border-zinc-200 dark:border-zinc-800">
+                  <Card
+                    key={index}
+                    className="border-zinc-200 dark:border-zinc-800"
+                  >
                     <CardHeader>
                       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
                         <Icon className="h-6 w-6 text-zinc-900 dark:text-zinc-50" />
@@ -123,7 +146,11 @@ export default function Home() {
 
             <div className="flex flex-wrap justify-center gap-2">
               {techStack.map((tech, index) => (
-                <Badge key={index} variant="secondary" className="px-4 py-2 text-sm">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="px-4 py-2 text-sm"
+                >
                   {tech}
                 </Badge>
               ))}
@@ -138,9 +165,7 @@ export default function Home() {
               Get started in minutes with our comprehensive setup guide
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg">
-                Start Building
-              </Button>
+              <Button size="lg">Start Building</Button>
               <Button size="lg" variant="ghost">
                 Learn More
               </Button>
