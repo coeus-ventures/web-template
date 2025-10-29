@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { getUser } from "@/lib/auth";
 import { signOut as signOutAction } from "@/app/auth/behaviors/signout/actions/signout";
+import { redirect } from "next/navigation";
+import { SIGNIN_URL } from "@/app.config";
 
 async function handleSignOut() {
   "use server";
@@ -19,6 +21,9 @@ async function handleSignOut() {
 
 export default async function HomePage() {
   const { user } = await getUser();
+
+  if (!user) redirect(SIGNIN_URL);
+
   const features = [
     {
       icon: Rocket,
