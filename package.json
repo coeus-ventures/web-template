@@ -19,6 +19,7 @@
     "shadcn:add": "npx shadcn@latest add"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.57",
     "@hookform/resolvers": "^5.2.2",
     "@libsql/client": "^0.15.15",
     "@radix-ui/react-accordion": "^1.2.12",
