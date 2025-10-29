@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 8080 --turbopack",
-    "dev:start": "pm2 start \"npm run dev\" --log ./logs/dev.log --name dev",
+    "dev:start": "pm2 start \"bun run dev\" --log ./logs/dev.log --name dev",
     "dev:logs": "pm2 logs dev",
     "dev:restart": "pm2 restart dev",
     "dev:test": "USE_TEST_DB=true next dev --turbopack -p 3001 > logs/test.log 2>&1 &",
