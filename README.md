@@ -114,7 +114,6 @@ bun run db:seed          # Populate with seed data
 bun run db:clean         # Clear all data from database
 bun run db:reset         # Clean + push schema (fresh start)
 
-# Migration Squashing (see db/SQUASHING_QUICK_START.md)
 bun run db:squash        # Combine all migrations into one
 ```
 
@@ -157,8 +156,6 @@ When you accumulate too many migrations (50+), squash them for faster test start
 ```bash
 bun run db:squash  # Combines all migrations into one
 ```
-
-See `db/SQUASHING_QUICK_START.md` for detailed instructions.
 
 ## Testing
 
