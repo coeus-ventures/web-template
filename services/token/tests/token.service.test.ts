@@ -308,7 +308,9 @@ describe("TokenService", () => {
     });
 
     it("should return false when no tokens exist for email", async () => {
-      const hasToken = await TokenService.hasValidToken("nonexistent@example.com");
+      const hasToken = await TokenService.hasValidToken(
+        "nonexistent@example.com"
+      );
 
       expect(hasToken).toBe(false);
     });
@@ -399,7 +401,9 @@ describe("TokenService", () => {
         ],
       });
 
-      const count = await TokenService.invalidateTokensForEmail("test@example.com");
+      const count = await TokenService.invalidateTokensForEmail(
+        "test@example.com"
+      );
 
       expect(count).toBe(2);
 
@@ -439,7 +443,9 @@ describe("TokenService", () => {
         ],
       });
 
-      const count = await TokenService.invalidateTokensForEmail("test@example.com");
+      const count = await TokenService.invalidateTokensForEmail(
+        "test@example.com"
+      );
 
       expect(count).toBe(1); // Only one token was updated
     });
@@ -482,7 +488,9 @@ describe("TokenService", () => {
     });
 
     it("should return 0 when no valid tokens exist for email", async () => {
-      const count = await TokenService.invalidateTokensForEmail("nonexistent@example.com");
+      const count = await TokenService.invalidateTokensForEmail(
+        "nonexistent@example.com"
+      );
 
       expect(count).toBe(0);
     });

@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import { TokenService } from "@/services/token.service";
+import { TokenService } from "@/services/token/token.service";
 
 interface ValidateTokenResult {
   success: boolean;
@@ -12,7 +12,9 @@ interface ValidateTokenResult {
   error?: string;
 }
 
-export async function validateToken(token: string): Promise<ValidateTokenResult> {
+export async function validateToken(
+  token: string
+): Promise<ValidateTokenResult> {
   try {
     // Validate token parameter
     if (!token || typeof token !== "string") {
@@ -24,7 +26,7 @@ export async function validateToken(token: string): Promise<ValidateTokenResult>
 
     // Validate and consume the token
     const result = await TokenService.validateAndConsume(token);
-    
+
     if (!result) {
       return {
         success: false,
