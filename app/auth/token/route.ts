@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { TokenService } from "@/services/token.service";
+import { TokenService } from "@/services/token/token.service";
 import { auth, getUser } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { magicLinks } from "@/db/schema";
