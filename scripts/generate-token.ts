@@ -6,7 +6,16 @@ async function generateToken() {
 
   try {
     // Invalidate any existing tokens for this email before creating a new one
-    await TokenService.invalidateTokensForEmail(email);
+    // Ignore errors if table doesn't exist or if there are no tokens to invalidate
+    try {
+      await TokenService.invalidateTokensForEmail(email);
+    } catch (invalidateError) {
+      // Log but don't fail - token generation can proceed
+      console.error(
+        "Warning: Failed to invalidate existing tokens:",
+        invalidateError
+      );
+    }
 
     const tokenUrl = await TokenService.issueOneTimeLoginToken(
       email,
