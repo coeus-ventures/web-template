@@ -117,10 +117,8 @@ export const TokenService = {
    * Invalidates all tokens for a given email
    */
   async invalidateTokensForEmail(email: string): Promise<number> {
-    const now = new Date();
-
     try {
-      // First, count how many tokens will be updated
+      // First, check if there are any tokens to update
       const tokensToUpdate = await db
         .select()
         .from(authTokens)
@@ -130,16 +128,22 @@ export const TokenService = {
         return 0;
       }
 
-      // Perform the update
-      await db
+      // Perform the update with explicit timestamp
+      const now = new Date();
+      const result = await db
         .update(authTokens)
         .set({ consumedAt: now })
         .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
 
-      return tokensToUpdate.length;
+      // Verify the update was successful
+      const rowsAffected = result.rowsAffected ?? tokensToUpdate.length;
+
+      return rowsAffected;
     } catch (error) {
       console.error("Error invalidating tokens:", error);
-      throw error;
+      throw new Error(
+        `Failed to invalidate tokens for ${email}: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   },
 
