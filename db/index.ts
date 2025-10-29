@@ -12,15 +12,27 @@ declare global {
   var dbIsTest: boolean | undefined;
 }
 
-function createSqliteDb(url: string) {
+// Create test database (in-memory SQLite)
+// Note: Migrations are run in vitest.setup.ts before tests start
+function createTestDb() {
   const client = createClient({
-    url,
+    url: process.env.DATABASE_URL_TEST!,
   });
 
   return drizzle(client, { schema });
 }
 
-function createTursoDb() {
+// Create development database (file-based SQLite)
+function createDevDb() {
+  const client = createClient({
+    url: process.env.DATABASE_URL_DEVELOPMENT!,
+  });
+
+  return drizzle(client, { schema });
+}
+
+// Create production database (Turso)
+function createProdDb() {
   const client = createClient({
     url: process.env.DATABASE_URL_PRODUCTION!,
     authToken: process.env.TURSO_AUTH_TOKEN!,
@@ -35,19 +47,15 @@ function createDbInstance() {
   const isTestEnv = process.env.USE_TEST_DB === "true";
   const environment = process.env.NODE_ENV || "development";
 
-  if (isTestEnv) {
-    return createSqliteDb(process.env.DATABASE_URL_TEST!);
+  if (isTestEnv || environment === 'test') {
+    return createTestDb();
   }
 
-  switch (environment) {
-    case "production":
-      return createTursoDb();
-    case "test":
-      return createSqliteDb(process.env.DATABASE_URL_TEST!);
-    case "development":
-    default:
-      return createSqliteDb(process.env.DATABASE_URL_DEVELOPMENT!);
+  if (environment === 'production') {
+    return createProdDb();
   }
+
+  return createDevDb();
 }
 
 // Force refresh if we're switching to test DB
