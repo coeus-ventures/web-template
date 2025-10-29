@@ -36,9 +36,12 @@ const getDbCredentials = () => {
   };
 };
 
+// Single migrations folder for all environments (like Rails db/migrate/)
+// The same migrations are run against dev, test, and production databases
+// Only the database URL changes per environment
 export default defineConfig({
   schema: 'db/schema.ts',
-  out: `db/migrations/${environment}`,
+  out: 'db/migrations',
   dialect: getDialect() as 'sqlite' | 'turso',
   dbCredentials: getDbCredentials(),
 });

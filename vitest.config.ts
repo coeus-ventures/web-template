@@ -11,16 +11,6 @@ export default defineConfig({
       NODE_ENV: 'test',
     },
     setupFiles: './vitest.setup.ts',
-    sequence: {
-      concurrent: false,
-    },
-    // Limit workers to prevent SQLITE_BUSY errors
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true, // Use single fork to avoid DB locking
-      },
-    },
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -42,12 +32,6 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           setupFiles: './vitest.setup.ts',
-          pool: 'forks',
-          poolOptions: {
-            forks: {
-              singleFork: true,
-            },
-          },
           include: [
             '**/*.test.{ts,js}',
             '**/*.unit.{ts,js}',
@@ -73,12 +57,6 @@ export default defineConfig({
           name: 'react',
           environment: 'jsdom',
           setupFiles: './vitest.setup.ts',
-          pool: 'forks',
-          poolOptions: {
-            forks: {
-              singleFork: true,
-            },
-          },
           include: [
             '**/*.test.tsx',
             '**/*.spec.tsx',
