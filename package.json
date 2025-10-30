@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 8080 --turbopack",
-    "dev:start": "pm2 start \"bun run dev\" --log ./logs/dev.log --name dev",
+    "dev:start": "pm2 start \"bun run dev\" --log ./logs/dev.log --name dev && pm2 start \"bun run drizzle:gateway\" --log ./logs/gateway.log --name gateway",
     "dev:logs": "pm2 logs dev",
     "dev:restart": "pm2 restart dev",
     "dev:test": "USE_TEST_DB=true next dev --turbopack -p 3001 > logs/test.log 2>&1 &",
@@ -20,6 +20,8 @@
     "db:seed": "bun db/scripts/seed.ts",
     "db:clean": "bun db/scripts/clean.ts",
     "db:reset": "bun db/scripts/clean.ts && bun run db:push",
+    "drizzle:gateway": "bun run lib/drizzle-gateway/index.ts",
+    "drizzle:gateway:dev": "bun --watch lib/drizzle-gateway/index.ts",
     "shadcn:add": "npx shadcn@latest add"
   },
   "dependencies": {
@@ -72,6 +74,7 @@
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
+    "@types/bun": "^1.3.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
