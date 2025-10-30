@@ -38,7 +38,10 @@ yarn-error.log*
 .pnpm-debug.log*
 bun-debug.log*
 
+lib/drizzle-gateway/start
+
 lib/drizzle-gateway/.store/store.json
+lib/drizzle-gateway/start
 
 # env files (can opt-in for committing if needed)
 .env*
