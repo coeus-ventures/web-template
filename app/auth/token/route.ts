@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { magicLinks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");

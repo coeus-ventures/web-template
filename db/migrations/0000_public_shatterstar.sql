@@ -33,6 +33,15 @@ CREATE TABLE `magic_links` (
 	`created_at` integer NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE `post` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`title` text NOT NULL,
+	`content` text NOT NULL,
+	`user_id` integer NOT NULL,
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -47,17 +56,7 @@ CREATE TABLE `session` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `session_token_unique` ON `session` (`token`);--> statement-breakpoint
-CREATE TABLE `verification` (
-	`id` text PRIMARY KEY NOT NULL,
-	`identifier` text NOT NULL,
-	`value` text NOT NULL,
-	`expires_at` integer NOT NULL,
-	`created_at` integer,
-	`updated_at` integer
-);
---> statement-breakpoint
-PRAGMA foreign_keys=OFF;--> statement-breakpoint
-CREATE TABLE `__new_user` (
+CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`email` text NOT NULL,
@@ -71,8 +70,12 @@ CREATE TABLE `__new_user` (
 	`ban_expires` integer
 );
 --> statement-breakpoint
-INSERT INTO `__new_user`("id", "name", "email", "email_verified", "image", "created_at", "updated_at", "role", "banned", "ban_reason", "ban_expires") SELECT "id", "name", "email", "email_verified", "image", "created_at", "updated_at", "role", "banned", "ban_reason", "ban_expires" FROM `user`;--> statement-breakpoint
-DROP TABLE `user`;--> statement-breakpoint
-ALTER TABLE `__new_user` RENAME TO `user`;--> statement-breakpoint
-PRAGMA foreign_keys=ON;--> statement-breakpoint
-CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);
+CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
+CREATE TABLE `verification` (
+	`id` text PRIMARY KEY NOT NULL,
+	`identifier` text NOT NULL,
+	`value` text NOT NULL,
+	`expires_at` integer NOT NULL,
+	`created_at` integer,
+	`updated_at` integer
+);

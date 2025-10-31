@@ -117,6 +117,30 @@ export const authErrors = {
     code: "SERVICE_UNAVAILABLE",
   }),
 
+  // Gateway proxy errors
+  gatewayUnauthorized: new AuthError("Unauthorized - Please login first", {
+    statusCode: 401,
+    code: "GATEWAY_UNAUTHORIZED",
+  }),
+
+  gatewayForbidden: new AuthError("Admin access required", {
+    statusCode: 403,
+    code: "GATEWAY_FORBIDDEN",
+  }),
+
+  gatewayUnavailable: new AuthError(
+    "Database administration service is not running",
+    {
+      statusCode: 503,
+      code: "GATEWAY_UNAVAILABLE",
+    }
+  ),
+
+  gatewayTimeout: new AuthError("Gateway request timeout", {
+    statusCode: 504,
+    code: "GATEWAY_TIMEOUT",
+  }),
+
   // Custom error creator
   create: (
     message: string,

@@ -1,8 +1,9 @@
 import { TokenService } from "../services/token/token.service";
 
 async function generateToken() {
-  const email = "test@example.com";
-  const callbackUrl = "/home";
+  const email =
+    process.argv[2] || process.env.ADMIN_EMAIL || "test@example.com";
+  const callbackUrl = process.argv[3] || "/home";
 
   try {
     // Invalidate any existing tokens for this email before creating a new one

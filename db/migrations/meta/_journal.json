@@ -1,19 +1,12 @@
 {
-  "version": "7",
+  "version": "6",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1761749675365,
-      "tag": "0000_numerous_smasher",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1761757114546,
-      "tag": "0001_young_amphibian",
+      "when": 1761853503658,
+      "tag": "0000_public_shatterstar",
       "breakpoints": true
     }
   ]

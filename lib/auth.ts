@@ -11,11 +11,13 @@ import { magicLinkUpsertAction } from "@/app/auth/behaviors/magic-link/actions/m
 
 export const auth = betterAuth({
   plugins: [
-    admin(),
+    admin({
+      defaultRole: "user",
+    }),
     magicLink({
       expiresIn: 300, // 5 minutes
       // Capture the magic link URL instead of sending email
-      sendMagicLink: async ({ email, token, url }) => {
+      sendMagicLink: async ({ email, url }) => {
         let finalUrl = url;
 
         const headersList = await headers();
@@ -67,8 +69,8 @@ export const auth = betterAuth({
   },
   advanced: {
     defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     },
   },
 
