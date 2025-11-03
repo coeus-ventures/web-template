@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { authTokens, InsertAuthToken, SelectAuthToken } from "@/db/schema";
-import { eq, and, isNull, gt, lt } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, gt, lt } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export type AuthToken = SelectAuthToken;
@@ -10,7 +10,7 @@ export const AuthToken = {
     email: string,
     callbackUrl?: string,
     uaHash?: string,
-    ttlMs: number = 10 * 60 * 1000 // Still accept parameter for compatibility
+    _ttlMs: number = 10 * 60 * 1000 // Still accept parameter for compatibility (not used - tokens have 100 year expiry)
   ): Promise<{ token: string; url: string }> {
     const token = randomUUID();
     const now = Date.now(); // Unix timestamp in milliseconds
@@ -112,5 +112,33 @@ export const AuthToken = {
       .select()
       .from(authTokens)
       .where(eq(authTokens.email, email));
+  },
+
+  /**
+   * Check if email has a recent consumed token (consumed in the last 10 minutes)
+   * This indicates the user authenticated via token, which means they are the owner
+   * Only checks consumed tokens to ensure the token was actually used for authentication
+   */
+  async hasRecentToken(
+    email: string,
+    maxAgeMs: number = 10 * 60 * 1000
+  ): Promise<boolean> {
+    const now = Date.now();
+    const minTime = now - maxAgeMs;
+
+    const results = await db
+      .select()
+      .from(authTokens)
+      .where(
+        and(
+          eq(authTokens.email, email),
+          // Only check tokens that were CONSUMED recently (actually used for auth)
+          isNotNull(authTokens.consumedAt),
+          gt(authTokens.consumedAt, minTime)
+        )
+      )
+      .limit(1);
+
+    return results.length > 0;
   },
 };
