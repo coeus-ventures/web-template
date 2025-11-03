@@ -53,12 +53,16 @@ export const AuthToken = {
 
   async consume(token: string, uaHash?: string): Promise<AuthToken | null> {
     const now = new Date();
+    // Convert to Unix timestamp in seconds (as SQLite expects)
+    const nowTimestamp = Math.floor(now.getTime() / 1000);
+    const nowAsDate = new Date(nowTimestamp * 1000);
 
     console.debug("[AuthToken.consume] Debug info:", {
       token,
       uaHash,
       now: now.toISOString(),
       nowTimestamp: now.getTime(),
+      nowTimestampSeconds: nowTimestamp,
       nowType: typeof now,
     });
 
@@ -76,15 +80,17 @@ export const AuthToken = {
     }
 
     // Atomically mark as consumed
+    // Use the Date object, but ensure it's properly formatted for SQLite
     console.debug("[AuthToken.consume] Attempting to update with:", {
-      consumedAt: now,
-      consumedAtType: typeof now,
-      consumedAtValue: now.getTime(),
+      consumedAt: nowAsDate,
+      consumedAtISO: nowAsDate.toISOString(),
+      consumedAtTimestamp: nowTimestamp,
+      consumedAtType: typeof nowAsDate,
     });
 
     const updated = await db
       .update(authTokens)
-      .set({ consumedAt: now })
+      .set({ consumedAt: nowAsDate })
       .where(
         and(
           eq(authTokens.token, token),
