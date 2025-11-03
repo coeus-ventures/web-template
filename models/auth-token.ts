@@ -53,16 +53,12 @@ export const AuthToken = {
 
   async consume(token: string, uaHash?: string): Promise<AuthToken | null> {
     const now = new Date();
-    // Convert to Unix timestamp in seconds (as SQLite expects)
-    const nowTimestamp = Math.floor(now.getTime() / 1000);
-    const nowAsDate = new Date(nowTimestamp * 1000);
 
     console.debug("[AuthToken.consume] Debug info:", {
       token,
       uaHash,
       now: now.toISOString(),
       nowTimestamp: now.getTime(),
-      nowTimestampSeconds: nowTimestamp,
       nowType: typeof now,
     });
 
@@ -80,31 +76,40 @@ export const AuthToken = {
     }
 
     // Atomically mark as consumed
-    // Use the Date object, but ensure it's properly formatted for SQLite
-    console.debug("[AuthToken.consume] Attempting to update with:", {
-      consumedAt: nowAsDate,
-      consumedAtISO: nowAsDate.toISOString(),
-      consumedAtTimestamp: nowTimestamp,
-      consumedAtType: typeof nowAsDate,
+    console.debug("[AuthToken.consume] Attempting to update with Date:", {
+      consumedAt: now,
+      consumedAtISO: now.toISOString(),
+      consumedAtType: typeof now,
     });
 
-    const updated = await db
-      .update(authTokens)
-      .set({ consumedAt: nowAsDate })
-      .where(
-        and(
-          eq(authTokens.token, token),
-          isNull(authTokens.consumedAt) // Double-check to prevent race conditions
+    try {
+      const updated = await db
+        .update(authTokens)
+        .set({ consumedAt: now })
+        .where(
+          and(
+            eq(authTokens.token, token),
+            isNull(authTokens.consumedAt) // Double-check to prevent race conditions
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    console.debug("[AuthToken.consume] Update result:", {
-      rowsUpdated: updated.length,
-      updatedToken: updated[0] || null,
-    });
+      console.debug("[AuthToken.consume] Update result:", {
+        rowsUpdated: updated.length,
+        updatedToken: updated[0] || null,
+      });
 
-    return updated[0] || null;
+      return updated[0] || null;
+    } catch (error) {
+      console.error("[AuthToken.consume] Update failed:", {
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        token,
+        now: now.toISOString(),
+      });
+      throw error;
+    }
   },
 
   async cleanupExpired(): Promise<number> {

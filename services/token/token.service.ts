@@ -112,41 +112,46 @@ export const TokenService = {
    */
   async invalidateTokensForEmail(email: string): Promise<number> {
     const now = new Date();
-    // Convert to Unix timestamp in seconds (as SQLite expects)
-    // Then create a new Date object from it to ensure proper formatting
-    const nowTimestamp = Math.floor(now.getTime() / 1000);
-    const nowAsDate = new Date(nowTimestamp * 1000);
 
     console.debug("[TokenService.invalidateTokensForEmail] Debug info:", {
       email,
       now: now.toISOString(),
       nowTimestamp: now.getTime(),
-      nowTimestampSeconds: nowTimestamp,
       nowType: typeof now,
-      nowAsDate: nowAsDate.toISOString(),
     });
 
     console.debug(
       "[TokenService.invalidateTokensForEmail] Attempting update query:",
       {
         table: "auth_tokens",
-        set: { consumedAt: nowAsDate },
-        consumedAtTimestamp: nowTimestamp,
+        set: { consumedAt: now },
         where: `email = ${email} AND consumed_at IS NULL`,
       }
     );
 
-    const result = await db
-      .update(authTokens)
-      .set({ consumedAt: nowAsDate })
-      .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
+    try {
+      const result = await db
+        .update(authTokens)
+        .set({ consumedAt: now })
+        .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
 
-    console.debug("[TokenService.invalidateTokensForEmail] Update result:", {
-      rowsAffected: result.rowsAffected,
-      resultType: typeof result.rowsAffected,
-    });
+      console.debug("[TokenService.invalidateTokensForEmail] Update result:", {
+        rowsAffected: result.rowsAffected,
+        resultType: typeof result.rowsAffected,
+      });
 
-    return result.rowsAffected || 0;
+      return result.rowsAffected || 0;
+    } catch (error) {
+      console.error("[TokenService.invalidateTokensForEmail] Update failed:", {
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        errorName: error instanceof Error ? error.name : undefined,
+        email,
+        now: now.toISOString(),
+      });
+      throw error;
+    }
   },
 
   /**
