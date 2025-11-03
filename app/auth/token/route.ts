@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TokenService } from "@/services/token/token.service";
-import { auth, getUser } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { magicLinks } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,18 +10,6 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
   const redirectTo = url.searchParams.get("redirectTo");
-
-  const { user } = await getUser();
-
-  if (user) {
-    // User is already authenticated, redirect to the intended destination or dashboard
-    const finalRedirectUrl = redirectTo || "/dashboard";
-    const host = req.headers.get("host");
-    const isLocalhost = host?.includes("localhost");
-    const protocol = isLocalhost ? "http" : "https";
-    const baseUrl = `${protocol}://${host}`;
-    return NextResponse.redirect(new URL(finalRedirectUrl, baseUrl));
-  }
 
   // Validate token parameter
   if (!token) {
