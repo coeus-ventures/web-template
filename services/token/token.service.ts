@@ -42,7 +42,16 @@ export const TokenService = {
 
     await db.insert(authTokens).values(insertData);
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
+    // Prefer domain from env to avoid localhost links in preview/prod
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.BETTER_AUTH_URL ||
+      process.env.APP_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : undefined) ||
+      "http://localhost:8080";
     const url = `${baseUrl}/auth/token?token=${token}`;
 
     console.debug("[TokenService.issueOneTimeLoginToken] issued", {

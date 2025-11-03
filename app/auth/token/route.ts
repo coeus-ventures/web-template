@@ -51,11 +51,17 @@ export async function GET(req: NextRequest) {
   const finalRedirectUrl = redirectTo || tokenData.callbackUrl;
 
   // Prepare callback URL with correlation ID
+  // Prefer environment origin to avoid localhost in preview/prod
+  const envBase =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.BETTER_AUTH_URL ||
+    undefined;
   const host = req.headers.get("host");
   const isLocalhost = host?.includes("localhost");
   const protocol = isLocalhost ? "http" : "https";
-  const baseUrl = `${protocol}://${host}`;
-  const callbackURL = new URL(finalRedirectUrl, baseUrl);
+  const computedBase = envBase || `${protocol}://${host}`;
+  const callbackURL = new URL(finalRedirectUrl, computedBase);
   callbackURL.searchParams.set("cid", cid);
 
   try {
