@@ -9,7 +9,6 @@ async function main() {
   const storePath = path.resolve(projectRoot, "lib/drizzle-gateway/.store");
   const devDbPath = path.resolve(projectRoot, "db/databases/development.db");
 
-  requireMasterpass();
   checkBinary(binaryPath);
   await setExecutable(binaryPath);
   await writeStore(storePath, devDbPath);
@@ -40,14 +39,6 @@ async function checkPortInUse(port: string): Promise<boolean> {
     return result.exitCode === 0;
   } catch {
     return false;
-  }
-}
-
-export function requireMasterpass() {
-  const masterpass = Bun.env.DRIZZLE_GATEWAY_MASTERPASS || "";
-  if (!masterpass) {
-    console.error("❌ DRIZZLE_GATEWAY_MASTERPASS is required.");
-    process.exit(1);
   }
 }
 
@@ -91,7 +82,6 @@ export function buildEnv(storePath: string, devDbPath: string) {
     ...Bun.env,
     HOST: "127.0.0.1",
     PORT: port,
-    MASTERPASS: Bun.env.DRIZZLE_GATEWAY_MASTERPASS!,
     STORE_PATH: storePath,
     DATABASE_URL: devDbPath,
   };
@@ -100,8 +90,7 @@ export function buildEnv(storePath: string, devDbPath: string) {
 export function logStart(port: string, devDbPath: string) {
   console.log("\n🚀 Starting Drizzle Studio (Dev)");
   console.log(`   URL:   http://127.0.0.1:${port}`);
-  console.log(`   DB:    ${devDbPath}`);
-  console.log("   Auth:  MASTERPASS required\n");
+  console.log(`   DB:    ${devDbPath}\n`);
 }
 
 export function startGateway(

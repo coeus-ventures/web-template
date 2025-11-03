@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const GATEWAY_URL = process.env.DRIZZLE_GATEWAY_URL || "http://127.0.0.1:4983";
-const GATEWAY_TOKEN = process.env.DRIZZLE_GATEWAY_MASTERPASS;
 
 export class DrizzleGatewayService {
   private readonly gatewayUrl: string;
-  private readonly gatewayToken: string | undefined;
 
-  constructor(options?: { gatewayUrl?: string; gatewayToken?: string }) {
+  constructor(options?: { gatewayUrl?: string }) {
     this.gatewayUrl = options?.gatewayUrl || GATEWAY_URL;
-    this.gatewayToken = options?.gatewayToken ?? GATEWAY_TOKEN;
   }
 
   async fetchGateway(req: NextRequest, path: string = ""): Promise<Response> {
     const url = `${this.gatewayUrl}/${path}${req.nextUrl.search}`;
     const headers = new Headers(req.headers);
     headers.delete("host");
-    if (this.gatewayToken) {
-      headers.set("Authorization", `Bearer ${this.gatewayToken}`);
-    }
     return await fetch(url, {
       method: req.method,
       headers,
@@ -37,9 +31,6 @@ export class DrizzleGatewayService {
     const modifiedHeaders = new Headers(req.headers);
     modifiedHeaders.delete("accept-encoding");
     modifiedHeaders.delete("host");
-    if (this.gatewayToken) {
-      modifiedHeaders.set("Authorization", `Bearer ${this.gatewayToken}`);
-    }
 
     const url = `${this.gatewayUrl}/${path}${req.nextUrl.search}`;
     const response = await fetch(url, {
