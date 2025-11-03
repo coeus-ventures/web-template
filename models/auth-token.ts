@@ -54,18 +54,34 @@ export const AuthToken = {
   async consume(token: string, uaHash?: string): Promise<AuthToken | null> {
     const now = new Date();
 
+    console.debug("[AuthToken.consume] Debug info:", {
+      token,
+      uaHash,
+      now: now.toISOString(),
+      nowTimestamp: now.getTime(),
+      nowType: typeof now,
+    });
+
     // First, find the valid token
     const validToken = await this.findValidToken(token);
     if (!validToken) {
+      console.debug("[AuthToken.consume] No valid token found");
       return null;
     }
 
     // Check UA hash if provided and token has one
     if (validToken.uaHash && uaHash && validToken.uaHash !== uaHash) {
+      console.debug("[AuthToken.consume] UA hash mismatch");
       return null;
     }
 
     // Atomically mark as consumed
+    console.debug("[AuthToken.consume] Attempting to update with:", {
+      consumedAt: now,
+      consumedAtType: typeof now,
+      consumedAtValue: now.getTime(),
+    });
+
     const updated = await db
       .update(authTokens)
       .set({ consumedAt: now })
@@ -76,6 +92,11 @@ export const AuthToken = {
         )
       )
       .returning();
+
+    console.debug("[AuthToken.consume] Update result:", {
+      rowsUpdated: updated.length,
+      updatedToken: updated[0] || null,
+    });
 
     return updated[0] || null;
   },

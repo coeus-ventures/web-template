@@ -42,6 +42,12 @@ export async function validateToken(
       },
     };
   } catch (error) {
+    console.debug("[validateToken] Error details:", {
+      error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      token: token?.substring(0, 10) + "...", // Log apenas início do token por segurança
+    });
     console.error("Error validating token:", error);
     return {
       success: false,
