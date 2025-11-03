@@ -13,9 +13,9 @@ export const AuthToken = {
     ttlMs: number = 10 * 60 * 1000 // Still accept parameter for compatibility
   ): Promise<{ token: string; url: string }> {
     const token = randomUUID();
-    const now = new Date();
+    const now = Date.now(); // Unix timestamp in milliseconds
     // Set expiration to 100 years in the future (effectively never expires)
-    const expiresAt = new Date(now.getTime() + 100 * 365 * 24 * 60 * 60 * 1000);
+    const expiresAt = now + 100 * 365 * 24 * 60 * 60 * 1000;
 
     const insertData: InsertAuthToken = {
       token,
@@ -52,13 +52,13 @@ export const AuthToken = {
   },
 
   async consume(token: string, uaHash?: string): Promise<AuthToken | null> {
-    const now = new Date();
+    const now = Date.now(); // Unix timestamp in milliseconds
 
     console.debug("[AuthToken.consume] Debug info:", {
       token,
       uaHash,
-      now: now.toISOString(),
-      nowTimestamp: now.getTime(),
+      now,
+      nowISO: new Date(now).toISOString(),
       nowType: typeof now,
     });
 
@@ -76,9 +76,9 @@ export const AuthToken = {
     }
 
     // Atomically mark as consumed
-    console.debug("[AuthToken.consume] Attempting to update with Date:", {
+    console.debug("[AuthToken.consume] Attempting to update with timestamp:", {
       consumedAt: now,
-      consumedAtISO: now.toISOString(),
+      consumedAtISO: new Date(now).toISOString(),
       consumedAtType: typeof now,
     });
 
@@ -106,19 +106,19 @@ export const AuthToken = {
         errorMessage: error instanceof Error ? error.message : String(error),
         errorStack: error instanceof Error ? error.stack : undefined,
         token,
-        now: now.toISOString(),
+        now,
       });
       throw error;
     }
   },
 
   async cleanupExpired(): Promise<number> {
-    const now = new Date();
+    const now = Date.now();
 
     // Delete tokens that are either:
     // 1. Expired (past their expiresAt)
     // 2. Consumed more than 24 hours ago
-    const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const dayAgo = now - 24 * 60 * 60 * 1000;
 
     const result = await db.delete(authTokens).where(
       and(

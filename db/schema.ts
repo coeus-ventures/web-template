@@ -76,9 +76,9 @@ export const authTokens = sqliteTable("auth_tokens", {
   email: text("email").notNull(),
   callbackUrl: text("callback_url"),
   uaHash: text("ua_hash"),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  consumedAt: integer("consumed_at", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  expiresAt: integer("expires_at").notNull(), // Unix timestamp in milliseconds
+  consumedAt: integer("consumed_at"), // Unix timestamp in milliseconds
+  createdAt: integer("created_at").notNull(), // Unix timestamp in milliseconds
 });
 
 export type InsertAuthToken = typeof authTokens.$inferInsert;
@@ -88,8 +88,8 @@ export const magicLinks = sqliteTable("magic_links", {
   cid: text("cid").primaryKey(),
   email: text("email").notNull(),
   verifyUrl: text("verify_url").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  expiresAt: integer("expires_at").notNull(), // Unix timestamp in milliseconds
+  createdAt: integer("created_at").notNull(), // Unix timestamp in milliseconds
 });
 
 export type InsertMagicLink = typeof magicLinks.$inferInsert;

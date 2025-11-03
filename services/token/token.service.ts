@@ -111,12 +111,12 @@ export const TokenService = {
    * Invalidates all tokens for a given email
    */
   async invalidateTokensForEmail(email: string): Promise<number> {
-    const now = new Date();
+    const now = Date.now(); // Unix timestamp in milliseconds
 
     console.debug("[TokenService.invalidateTokensForEmail] Debug info:", {
       email,
-      now: now.toISOString(),
-      nowTimestamp: now.getTime(),
+      now,
+      nowISO: new Date(now).toISOString(),
       nowType: typeof now,
     });
 
@@ -148,7 +148,7 @@ export const TokenService = {
         errorStack: error instanceof Error ? error.stack : undefined,
         errorName: error instanceof Error ? error.name : undefined,
         email,
-        now: now.toISOString(),
+        now,
       });
       throw error;
     }

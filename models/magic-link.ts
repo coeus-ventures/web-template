@@ -9,10 +9,10 @@ export const MagicLink = {
     cid: string,
     email: string,
     verifyUrl: string,
-    expiresAt?: Date
+    expiresAtMs?: number
   ): Promise<MagicLink> {
-    const now = new Date();
-    const expiry = expiresAt || new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes default
+    const now = Date.now();
+    const expiry = expiresAtMs || now + 5 * 60 * 1000; // 5 minutes default
 
     const insertData: InsertMagicLink = {
       cid,
@@ -30,10 +30,10 @@ export const MagicLink = {
     cid: string,
     email: string,
     verifyUrl: string,
-    expiresAt?: Date
+    expiresAtMs?: number
   ): Promise<MagicLink> {
-    const now = new Date();
-    const expiry = expiresAt || new Date(now.getTime() + 5 * 60 * 1000);
+    const now = Date.now();
+    const expiry = expiresAtMs || now + 5 * 60 * 1000;
 
     const insertData: InsertMagicLink = {
       cid,
@@ -89,7 +89,7 @@ export const MagicLink = {
 
     if (magicLink) {
       // Check if expired
-      const now = new Date();
+      const now = Date.now();
       if (magicLink.expiresAt <= now) {
         return null;
       }
@@ -104,7 +104,7 @@ export const MagicLink = {
 
     // Final expiry check
     if (magicLink) {
-      const now = new Date();
+      const now = Date.now();
       if (magicLink.expiresAt <= now) {
         return null;
       }
@@ -121,7 +121,7 @@ export const MagicLink = {
   },
 
   async findValidByEmail(email: string): Promise<MagicLink[]> {
-    const now = new Date();
+    const now = Date.now();
 
     return await db
       .select()
@@ -130,10 +130,10 @@ export const MagicLink = {
   },
 
   async cleanupExpired(): Promise<number> {
-    const now = new Date();
+    const now = Date.now();
 
     // Delete magic links that expired more than 24 hours ago
-    const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const dayAgo = now - 24 * 60 * 60 * 1000;
 
     const result = await db
       .delete(magicLinks)
