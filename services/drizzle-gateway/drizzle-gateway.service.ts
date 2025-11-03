@@ -52,8 +52,12 @@ export class DrizzleGatewayService {
 
     if (response.headers.get("content-type")?.includes("text/html")) {
       let html = await response.text();
+      // Rewrite links
       html = html.replace(/href="\//g, `href="${basePath}/`);
+      // Rewrite scripts and images
       html = html.replace(/src="\//g, `src="${basePath}/`);
+      // Rewrite form actions (critical for passcode submission)
+      html = html.replace(/action="\//g, `action="${basePath}/`);
 
       const headers = new Headers(response.headers);
       headers.delete("content-encoding");
