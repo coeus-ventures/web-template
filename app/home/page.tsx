@@ -20,9 +20,9 @@ async function handleSignOut() {
 }
 
 export default async function HomePage() {
-  const { user } = await getUser();
+  // const { user } = await getUser();
 
-  if (!user) redirect(SIGNIN_URL);
+  // if (!user) redirect(SIGNIN_URL);
 
   const features = [
     {
