@@ -9,12 +9,6 @@ async function main() {
   const storePath = path.resolve(projectRoot, "lib/drizzle-gateway/.store");
   const devDbPath = path.resolve(projectRoot, "db/databases/development.db");
 
-  const masterpass = Bun.env.DRIZZLE_GATEWAY_MASTERPASS || "";
-  if (!masterpass) {
-    console.error("❌ DRIZZLE_GATEWAY_MASTERPASS is required.");
-    process.exit(1);
-  }
-
   if (!existsSync(binaryPath)) {
     console.error("❌ Binary not found:", binaryPath);
     process.exit(1);
@@ -47,15 +41,13 @@ async function main() {
     ...Bun.env,
     HOST: "127.0.0.1",
     PORT: port,
-    MASTERPASS: masterpass,
     STORE_PATH: storePath,
     DATABASE_URL: devDbPath,
   };
 
   console.log("\n🚀 Starting Drizzle Studio (Dev)");
   console.log(`   URL:   http://127.0.0.1:${port}`);
-  console.log(`   DB:    ${devDbPath}`);
-  console.log("   Auth:  MASTERPASS required\n");
+  console.log(`   DB:    ${devDbPath}\n`);
 
   const child = Bun.spawn({
     cmd: [binaryPath],
