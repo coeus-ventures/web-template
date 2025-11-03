@@ -5,10 +5,14 @@ async function generateToken() {
     process.argv[2] || process.env.ADMIN_EMAIL || "test@example.com";
   const callbackUrl = process.argv[3] || "/home";
 
+  console.debug("[scripts/generate-token] start", { email, callbackUrl });
   try {
     // Invalidate any existing tokens for this email before creating a new one
     // Ignore errors if table doesn't exist or if there are no tokens to invalidate
     try {
+      console.debug("[scripts/generate-token] invalidating existing tokens", {
+        email,
+      });
       await TokenService.invalidateTokensForEmail(email);
     } catch (invalidateError) {
       // Log but don't fail - token generation can proceed
@@ -40,6 +44,7 @@ async function generateToken() {
     };
 
     console.log(JSON.stringify(result, null, 2));
+    console.debug("[scripts/generate-token] done", { email });
   } catch (error) {
     console.log(
       JSON.stringify(
@@ -51,6 +56,10 @@ async function generateToken() {
         2
       )
     );
+    console.debug("[scripts/generate-token] failed", {
+      email,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 

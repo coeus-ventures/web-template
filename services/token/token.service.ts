@@ -19,6 +19,11 @@ export const TokenService = {
     callbackUrl?: string,
     uaHash?: string
   ): Promise<string> {
+    console.debug("[TokenService.issueOneTimeLoginToken] called", {
+      email,
+      hasCallback: Boolean(callbackUrl),
+      hasUaHash: Boolean(uaHash),
+    });
     // Create the token with 10-minute TTL
     const token = randomUUID();
     const now = new Date();
@@ -40,6 +45,11 @@ export const TokenService = {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
     const url = `${baseUrl}/auth/token?token=${token}`;
 
+    console.debug("[TokenService.issueOneTimeLoginToken] issued", {
+      email,
+      token,
+      url,
+    });
     return url;
   },
 
@@ -51,6 +61,10 @@ export const TokenService = {
     token: string,
     uaHash?: string
   ): Promise<TokenData | null> {
+    console.debug("[TokenService.validateAndConsume] called", {
+      token,
+      hasUaHash: Boolean(uaHash),
+    });
     try {
       // Find the valid token (no longer marking as consumed)
       const rows = await db
@@ -66,15 +80,23 @@ export const TokenService = {
 
       const tokenRecord = rows[0];
       if (!tokenRecord) {
+        console.debug("[TokenService.validateAndConsume] not found", { token });
         return null;
       }
 
       // Validate UA hash if present
       if (tokenRecord.uaHash && uaHash && tokenRecord.uaHash !== uaHash) {
+        console.debug("[TokenService.validateAndConsume] uaHash mismatch", {
+          token,
+        });
         return null;
       }
 
       // No longer marking as consumed - tokens are reusable
+      console.debug("[TokenService.validateAndConsume] success", {
+        email: tokenRecord.email,
+        hasCallback: Boolean(tokenRecord.callbackUrl),
+      });
       return {
         email: tokenRecord.email,
         callbackUrl: tokenRecord.callbackUrl || "/home",
@@ -117,6 +139,7 @@ export const TokenService = {
    * Invalidates all tokens for a given email
    */
   async invalidateTokensForEmail(email: string): Promise<number> {
+    console.debug("[TokenService.invalidateTokensForEmail] called", { email });
     try {
       // First, check if there are any tokens to update
       const tokensToUpdate = await db
@@ -125,6 +148,10 @@ export const TokenService = {
         .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
 
       if (tokensToUpdate.length === 0) {
+        console.debug(
+          "[TokenService.invalidateTokensForEmail] nothing to invalidate",
+          { email }
+        );
         return 0;
       }
 
@@ -138,11 +165,17 @@ export const TokenService = {
       // Verify the update was successful
       const rowsAffected = result.rowsAffected ?? tokensToUpdate.length;
 
+      console.debug("[TokenService.invalidateTokensForEmail] invalidated", {
+        email,
+        rowsAffected,
+      });
       return rowsAffected;
     } catch (error) {
       console.error("Error invalidating tokens:", error);
       throw new Error(
-        `Failed to invalidate tokens for ${email}: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to invalidate tokens for ${email}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -151,6 +184,7 @@ export const TokenService = {
    * Cleans up old tokens and magic links
    */
   async cleanup(): Promise<{ tokens: number; magicLinks: number }> {
+    console.debug("[TokenService.cleanup] called");
     const now = new Date();
 
     // Delete tokens that are:
@@ -182,6 +216,10 @@ export const TokenService = {
 
     const magicLinksDeleted = magicLinksResult.rowsAffected || 0;
 
+    console.debug("[TokenService.cleanup] done", {
+      tokensDeleted,
+      magicLinksDeleted,
+    });
     return {
       tokens: tokensDeleted,
       magicLinks: magicLinksDeleted,
