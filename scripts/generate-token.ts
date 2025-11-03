@@ -1,8 +1,24 @@
 import { TokenService } from "@/services/token/token.service";
 
 async function generateToken() {
-  const email = "test@example.com";
-  const callbackUrl = "/home";
+  // Read arguments from command line
+  // argv[0] = node/bun, argv[1] = script path, argv[2] = email, argv[3] = callbackUrl
+  const email = process.argv[2] || "test@example.com";
+  const callbackUrl = process.argv[3] || "/home";
+
+  if (!email || email === "") {
+    console.log(
+      JSON.stringify(
+        {
+          success: false,
+          error: "Email is required",
+        },
+        null,
+        2
+      )
+    );
+    process.exit(1);
+  }
 
   try {
     // Invalidate any existing tokens for this email before creating a new one
@@ -41,6 +57,7 @@ async function generateToken() {
         2
       )
     );
+    process.exit(1);
   }
 }
 
