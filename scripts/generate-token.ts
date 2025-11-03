@@ -1,4 +1,8 @@
+import { config } from "dotenv";
 import { TokenService } from "../services/token/token.service";
+
+// Ensure .env is loaded when executed via SSH or direct Bun
+config({ path: ".env", override: false });
 
 async function generateToken() {
   const email =
@@ -7,26 +11,27 @@ async function generateToken() {
 
   console.debug("[scripts/generate-token] start", { email, callbackUrl });
   try {
-    // Invalidate any existing tokens for this email before creating a new one
-    // Ignore errors if table doesn't exist or if there are no tokens to invalidate
-    try {
-      console.debug("[scripts/generate-token] invalidating existing tokens", {
-        email,
-      });
-      await TokenService.invalidateTokensForEmail(email);
-    } catch (invalidateError) {
-      // Log but don't fail - token generation can proceed
-      console.error(
-        "Warning: Failed to invalidate existing tokens:",
-        invalidateError
-      );
-    }
-
     const tokenUrl = await TokenService.issueOneTimeLoginToken(
       email,
       callbackUrl
     );
     const token = tokenUrl.split("token=")[1];
+
+    // After issuing the new token, invalidate previous tokens while keeping the new one active
+    try {
+      console.debug(
+        "[scripts/generate-token] invalidating previous tokens after issue",
+        { email, token }
+      );
+      await TokenService.invalidateTokensForEmail(email, {
+        excludeToken: token,
+      });
+    } catch (invalidateError) {
+      console.error(
+        "Warning: Failed to invalidate previous tokens after issue:",
+        invalidateError
+      );
+    }
 
     const result = {
       success: true,

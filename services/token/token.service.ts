@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { db } from "@/db";
 import { authTokens, InsertAuthToken, magicLinks } from "@/db/schema";
-import { and, eq, isNull, isNotNull, lt, or } from "drizzle-orm";
+import { and, eq, isNull, isNotNull, lt, ne, or } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface TokenData {
@@ -147,14 +147,31 @@ export const TokenService = {
   /**
    * Invalidates all tokens for a given email
    */
-  async invalidateTokensForEmail(email: string): Promise<number> {
-    console.debug("[TokenService.invalidateTokensForEmail] called", { email });
+  async invalidateTokensForEmail(
+    email: string,
+    options?: { excludeToken?: string }
+  ): Promise<number> {
+    console.debug("[TokenService.invalidateTokensForEmail] called", {
+      email,
+      excludeToken: options?.excludeToken,
+    });
     try {
+      const conditions = [
+        eq(authTokens.email, email),
+        isNull(authTokens.consumedAt),
+      ];
+
+      if (options?.excludeToken) {
+        conditions.push(ne(authTokens.token, options.excludeToken));
+      }
+
+      const whereClause = and(...conditions);
+
       // First, check if there are any tokens to update
       const tokensToUpdate = await db
         .select()
         .from(authTokens)
-        .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
+        .where(whereClause);
 
       if (tokensToUpdate.length === 0) {
         console.debug(
@@ -169,7 +186,7 @@ export const TokenService = {
       const result = await db
         .update(authTokens)
         .set({ consumedAt: now })
-        .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
+        .where(whereClause);
 
       // Verify the update was successful
       const rowsAffected = result.rowsAffected ?? tokensToUpdate.length;
