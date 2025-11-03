@@ -69,12 +69,6 @@ export const TokenService = {
         uaHash: tokenRecord.uaHash || undefined,
       };
     } catch (error) {
-      console.debug("[TokenService.validateAndConsume] Error details:", {
-        error,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-        token: token?.substring(0, 10) + "...", // Log apenas início do token por segurança
-      });
       console.error("Error validating token:", error);
       return null;
     }
@@ -113,32 +107,11 @@ export const TokenService = {
   async invalidateTokensForEmail(email: string): Promise<number> {
     const now = Date.now(); // Unix timestamp in milliseconds
 
-    console.debug("[TokenService.invalidateTokensForEmail] Debug info:", {
-      email,
-      now,
-      nowISO: new Date(now).toISOString(),
-      nowType: typeof now,
-    });
-
-    console.debug(
-      "[TokenService.invalidateTokensForEmail] Attempting update query:",
-      {
-        table: "auth_tokens",
-        set: { consumedAt: now },
-        where: `email = ${email} AND consumed_at IS NULL`,
-      }
-    );
-
     try {
       const result = await db
         .update(authTokens)
         .set({ consumedAt: now })
         .where(and(eq(authTokens.email, email), isNull(authTokens.consumedAt)));
-
-      console.debug("[TokenService.invalidateTokensForEmail] Update result:", {
-        rowsAffected: result.rowsAffected,
-        resultType: typeof result.rowsAffected,
-      });
 
       return result.rowsAffected || 0;
     } catch (error) {
@@ -146,9 +119,7 @@ export const TokenService = {
         error,
         errorMessage: error instanceof Error ? error.message : String(error),
         errorStack: error instanceof Error ? error.stack : undefined,
-        errorName: error instanceof Error ? error.name : undefined,
         email,
-        now,
       });
       throw error;
     }
