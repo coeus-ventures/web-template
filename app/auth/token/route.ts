@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { TokenService } from "@/services/token/token.service";
-import { auth } from "@/lib/auth";
+import { MagicLink } from "@/models/magic-link";
+import { auth, getUser } from "@/lib/auth";
 import { randomUUID } from "crypto";
-import { magicLinks } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
+import { TokenService } from "@/services/token/token.service";
 
 export async function GET(req: NextRequest) {
-  console.debug("[auth/token][GET] start", {
-    url: req.url,
-    userAgent: req.headers.get("user-agent"),
-    xff: req.headers.get("x-forwarded-for"),
-  });
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
   const redirectTo = url.searchParams.get("redirectTo");
+
+  const { user } = await getUser();
+
+  if (user) {
+    // User is already authenticated, redirect to the intended destination or dashboard
+    const finalRedirectUrl = redirectTo || "/home";
+    const host = req.headers.get("host");
+    const isLocalhost = host?.includes("localhost");
+    const protocol = isLocalhost ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
+    return NextResponse.redirect(new URL(finalRedirectUrl, baseUrl));
+  }
 
   // Validate token parameter
   if (!token) {
@@ -38,7 +43,6 @@ export async function GET(req: NextRequest) {
   const tokenData = await TokenService.validateAndConsume(token, uaHash);
 
   if (!tokenData) {
-    console.debug("[auth/token][GET] invalid_or_expired token", { token });
     return NextResponse.redirect(
       new URL("/auth/signin?e=invalid_or_expired", req.url)
     );
@@ -51,25 +55,14 @@ export async function GET(req: NextRequest) {
   const finalRedirectUrl = redirectTo || tokenData.callbackUrl;
 
   // Prepare callback URL with correlation ID
-  // Prefer environment origin to avoid localhost in preview/prod
-  const envBase =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.BETTER_AUTH_URL ||
-    undefined;
   const host = req.headers.get("host");
   const isLocalhost = host?.includes("localhost");
   const protocol = isLocalhost ? "http" : "https";
-  const computedBase = envBase || `${protocol}://${host}`;
-  const callbackURL = new URL(finalRedirectUrl, computedBase);
+  const baseUrl = `${protocol}://${host}`;
+  const callbackURL = new URL(finalRedirectUrl, baseUrl);
   callbackURL.searchParams.set("cid", cid);
 
   try {
-    console.debug("[auth/token][GET] signInMagicLink -> BetterAuth", {
-      email: tokenData.email,
-      callbackURL: callbackURL.toString(),
-      cid,
-    });
     // Trigger BetterAuth magic link sign-in
     // The sendMagicLink handler will capture the verify URL in our database
     await auth.api.signInMagicLink({
@@ -85,46 +78,9 @@ export async function GET(req: NextRequest) {
 
     // Retrieve the captured magic link URL with retry mechanism
     // This handles potential write lag between the sendMagicLink handler and our read
-    const maxRetries = 5;
-    const delayMs = 50;
+    const magicLink = await MagicLink.findByCidWithRetry(cid, 5, 50);
 
-    let magicLinkRecord = null;
-
-    for (let i = 0; i < maxRetries && !magicLinkRecord; i++) {
-      if (i > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-
-      const results = await db
-        .select()
-        .from(magicLinks)
-        .where(eq(magicLinks.cid, cid))
-        .limit(1);
-
-      console.debug("[auth/token][GET] magicLink query attempt", {
-        attempt: i + 1,
-        found: results.length > 0,
-      });
-
-      if (results.length > 0) {
-        magicLinkRecord = results[0];
-
-        // Check if expired
-        const now = new Date();
-        if (magicLinkRecord.expiresAt <= now) {
-          console.debug("[auth/token][GET] magicLink expired", {
-            cid,
-            expiresAt: magicLinkRecord.expiresAt,
-          });
-          return NextResponse.redirect(
-            new URL("/auth/signin?e=link_expired", req.url)
-          );
-        }
-      }
-    }
-
-    if (!magicLinkRecord) {
-      console.debug("[auth/token][GET] link_generation_failed", { cid });
+    if (!magicLink) {
       return NextResponse.redirect(
         new URL("/auth/signin?e=link_generation_failed", req.url)
       );
@@ -132,14 +88,9 @@ export async function GET(req: NextRequest) {
 
     // Redirect the user to BetterAuth's verification URL
     // This will complete the authentication and establish a session
-    console.debug("[auth/token][GET] redirect to verifyUrl", {
-      cid,
-      verifyUrl: magicLinkRecord.verifyUrl,
-    });
-    return NextResponse.redirect(magicLinkRecord.verifyUrl);
+    return NextResponse.redirect(magicLink.verifyUrl);
   } catch (error) {
     console.error("Error during magic link flow:", error);
-    console.debug("[auth/token][GET] authentication_error", { cid });
     return NextResponse.redirect(
       new URL("/auth/signin?e=authentication_error", req.url)
     );

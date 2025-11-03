@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { validateToken } from "../actions/validate-token.action";
 import { TokenService } from "@/services/token/token.service";
 
-vi.mock("@/services/token/token.service");
+vi.mock("@/services/token.service");
 
 describe("validateToken action", () => {
   beforeEach(() => {

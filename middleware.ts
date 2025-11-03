@@ -3,11 +3,6 @@ import { getSessionCookie } from "better-auth/cookies";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  console.debug("[middleware] request", {
-    pathname,
-    method: request.method,
-    host: request.headers.get("host"),
-  });
 
   // Skip middleware for excluded paths
   if (
@@ -27,9 +22,6 @@ export async function middleware(request: NextRequest) {
   // This is the recommended approach to optimistically redirect users
   // We recommend handling auth checks in each page/route
   if (!sessionCookie) {
-    console.debug("[middleware] no session, redirecting to /auth/signin", {
-      pathname,
-    });
     const redirectUrl = new URL("/auth/signin", request.url);
     redirectUrl.searchParams.set(
       "redirectTo",
@@ -38,7 +30,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  console.debug("[middleware] session present, continue", { pathname });
   return NextResponse.next();
 }
 
