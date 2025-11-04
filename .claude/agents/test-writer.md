@@ -89,7 +89,7 @@ test.describe('Create Project Behavior', () => {
 ### Behavior Test Patterns
 - **NO MOCKING**: Never use `vi.mock()` or any Vitest mocking in Playwright tests
 - Use simple authentication: Navigate directly to pages without auth mocking
-- Use `PreState/PostState` for database setup if needed
+- Use `PreDB/PostDB` for database setup if needed
 - Use `test.afterEach` for cleanup
 - Use proper locators: `page.locator()`, `page.getByText()`, `page.getByRole()`
 - Set appropriate timeouts for async operations
@@ -98,7 +98,7 @@ test.describe('Create Project Behavior', () => {
 
 ## Test Type 2: Action Tests (.action.test.ts)
 
-Action tests verify server-side logic using PreState/PostState patterns for database state verification.
+Action tests verify server-side logic using PreDB/PostDB patterns for database state verification.
 
 ### Location Pattern
 ```
@@ -155,8 +155,8 @@ describe('deletePageAction with PreState/PostState', () => {
   });
 
   it('should successfully delete page', async () => {
-    // Set up initial state with PreState
-    await PreState(db, schema, {
+    // Set up initial state with PreDB
+    await PreDB(db, schema, {
       pages: [
         {
           name: 'Test Page',
@@ -177,8 +177,8 @@ describe('deletePageAction with PreState/PostState', () => {
     // Execute the action
     await deletePageAction(pageId, projectId);
 
-    // Assert the final state with PostState
-    await PostState(db, schema, {
+    // Assert the final state with PostDB
+    await PostDB(db, schema, {
       pages: [],
       issues_table: [],
     });
@@ -189,8 +189,8 @@ describe('deletePageAction with PreState/PostState', () => {
 ### Action Test Patterns
 - Mock Next.js utilities (`next/cache`)
 - Mock authentication (`getUser`)
-- Use `PreState` to set up initial database state
-- Use `PostState` to verify final database state
+- Use `PreDB` to set up initial database state
+- Use `PostDB` to verify final database state
 - Test with real database operations (NODE_ENV=test)
 - Clean up test data in `afterEach` hooks
 
