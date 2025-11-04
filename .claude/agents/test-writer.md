@@ -338,8 +338,9 @@ describe('useDeletePage', () => {
 Tests run with `NODE_ENV=test` using an isolated test database.
 
 ### Helper Functions
-- `PreState()` - Sets up initial database state for tests (from `@/services/behave-test/prestate`)
-- `PostState()` - Verifies final database state for tests (from `@/services/behave-test/poststate`)
+- `PreDB()` - Sets up initial database state for tests (from `@/lib/b-test/predb`)
+- `PostDB()` - Verifies final database state for tests (from `@/lib/b-test/postdb`)
+- `Tester()` - LLM-powered browser testing with HTML snapshots and natural language assertions (from `@/lib/b-test/tester`)
 - Model cleanup methods - Most models have a `cleanup()` method for test data removal
 
 ## When Writing Tests
