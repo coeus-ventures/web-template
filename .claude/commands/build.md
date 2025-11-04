@@ -10,45 +10,24 @@ This build process leverages specialized agents for each layer of the architectu
 
 | Agent | Purpose | Layer |
 |-------|---------|-------|
-| **model-writer** | Creates/updates data models with TypeScript types and CRUD operations | Infrastructure |
-| **service-writer** | Implements external integrations and complex business logic | Infrastructure |
-| **action-writer** | Creates server actions with auth, validation, and model calls | Backend |
+| **service-writer** | Implements external integrations and complex business logic | Backend |
+| **action-writer** | Creates server actions with auth, validation, and direct Drizzle queries | Backend |
 | **hook-writer** | Implements client hooks with state management and optimistic updates | Frontend |
 | **component-writer** | Creates UI components that consume hooks | Frontend |
 | **test-writer** | Writes all types of tests: behavior (.spec.ts), action (.action.test.ts), and hook (.test.tsx) | Testing |
 | **route-writer** | Creates API routes and server-side route handlers | Backend |
 
-Each agent is an expert in their domain and follows the project's strict three-layer architecture patterns. They ensure consistency, include proper debug logging, and handle errors appropriately.
+Each agent is an expert in their domain and follows the project's two-layer architecture patterns. They ensure consistency, include proper debug logging, and handle errors appropriately.
 
-**Prerequisites**: If the page.tsx the behavior belongs to doesn't exist yet, create an empty page with the 'use client' directive. 
+**Prerequisites**: If the page.tsx the behavior belongs to doesn't exist yet, create an empty page with the 'use client' directive.
 
-## 1. Create or Update Models (if necessary)
-
-**Location:** `/models/[entity-name].ts`
-
-### When to Create/Update:
-- New data entity needed (e.g., new table/collection)
-- New methods needed for existing entities
-- New relationships between entities
-
-### Agent Instructions:
-**Use the model-writer agent**
-
-**Required Information:**
-- Entity/table name
-- Whether creating new or updating existing model
-- Specific methods needed beyond standard CRUD
-- User scoping requirements (if applicable)
-
-The model-writer agent will handle all implementation details following the project's Infrastructure layer patterns.
-
-## 2. Create or Update Services (if necessary)
+## 1. Create or Update Services (if necessary)
 
 **Location:** `/services/[service-name].ts`
 
 ### When to Create/Update:
 - External API integrations needed
-- Complex business logic that spans multiple models
+- Complex business logic that doesn't belong in actions
 - Email, notifications, or third-party services
 - Heavy computations or background tasks
 
@@ -61,9 +40,9 @@ The model-writer agent will handle all implementation details following the proj
 - Complex business logic requirements
 - Environment variables needed
 
-The service-writer agent will handle all implementation details following the project's Infrastructure layer patterns.
+The service-writer agent will handle all implementation details following the project's Backend layer patterns.
 
-## 3. Create or Update State (Jotai Atoms)
+## 2. Create or Update State (Jotai Atoms)
 
 **Location:** `app/(app)/[page]/state.ts`
 
@@ -83,7 +62,7 @@ State files are typically created manually as they require domain-specific knowl
 - **Filter/Search atoms**: Store filter criteria
 - **Derived atoms**: Computed state based on other atoms
 
-## 4. Create or Update Actions
+## 3. Create or Update Actions
 
 **Location:** `app/(app)/[page]/behaviors/[behavior-name]/actions/[action-name].action.ts`
 
@@ -93,11 +72,11 @@ State files are typically created manually as they require domain-specific knowl
 **Required Information:**
 - Behavior name and action purpose
 - Input data requirements and validation rules
-- Which models to interact with
+- Which database tables to query (from `db/schema.ts`)
 - Authentication requirements
 - Expected return data structure
 
-The action-writer agent will handle all implementation details following the project's Backend layer patterns.
+The action-writer agent will handle all implementation details following the project's Backend layer patterns, using direct Drizzle queries.
 
 ### Testing the Action:
 After creating the action, **use the test-writer agent** to create an action test:
@@ -114,7 +93,7 @@ The test-writer will create a single test case using:
 npm run test [action-name].action.test.ts
 ```
 
-## 5. Create or Update Hooks
+## 4. Create or Update Hooks
 
 **Location:** `app/(app)/[page]/behaviors/[behavior-name]/hooks/use-[behavior].ts`
 
@@ -147,7 +126,7 @@ The test-writer will create a single test case using:
 npm run test use-[behavior].test.tsx
 ```
 
-## 6. Create or Update Components
+## 5. Create or Update Components
 
 **Location:** `app/(app)/[page]/components/[ComponentName].tsx`
 
@@ -164,7 +143,7 @@ npm run test use-[behavior].test.tsx
 
 The component-writer agent will handle all implementation details following the project's Frontend layer patterns.
 
-## 7. Create End-to-End Behavior Test
+## 6. Create End-to-End Behavior Test
 
 After implementing all the components, create a comprehensive end-to-end test to verify the complete user workflow.
 
@@ -263,7 +242,7 @@ The build command includes comprehensive debug logging for all layers:
 - Function calls with parameters (JSON formatted)
 - Authentication status and user ID
 - Validation results
-- Model method calls and results
+- Database queries and results
 - Success/error responses
 
 **🔧 SERVICE** logs show:
@@ -278,11 +257,6 @@ The build command includes comprehensive debug logging for all layers:
 - Optimistic updates (add/rollback)
 - Server action calls and responses
 
-**🔧 MODEL** logs show:
-- Database method calls with parameters
-- Query results (count of items, found/not found status)
-- Create/update/delete operations with IDs
-
 **Usage during testing:**
 1. Run your Playwright test:
    ```bash
@@ -293,7 +267,7 @@ The build command includes comprehensive debug logging for all layers:
    tail -n 100 logs/test.log
    ```
 3. Review logs to see exactly what functions were called and with what parameters
-4. Debug issues by following the complete flow from UI → Hook → Action → Model
+4. Debug issues by following the complete flow from UI → Hook → Action → Database
 5. The logs show the exact sequence of calls with all parameters for easy debugging
 
 This behavior test step ensures your complete behavior works from UI to database and back, catching integration issues that unit tests might miss.

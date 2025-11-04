@@ -1,7 +1,6 @@
-# [Issue title]
+# [Behavior Name]
 
-Brief overview of what this issue accomplishes.
-
+[Description of the behavior in one paragrah]
 
 # Functional Specification
 
@@ -58,6 +57,7 @@ id, user_id, action, resource_id
 
 
 # Technical Specification
+
 
 ## Action: [Action Name]
 File: `[behavior-path]/actions/[action-name].action.ts`
@@ -144,17 +144,3 @@ File: `services/[service-name].ts`
 * Retries on network failures (max 3 attempts)
 * Throws typed errors for API failures
 * Logs errors for monitoring
-
-# Tasks
-
-Implementation tasks for this feature
-
-* [ ] Backend implementation
-* [ ] Frontend components
-* [ ] Testing
-* [ ] Documentation
-
-# Notes
-
-Additional implementation considerations and decisions
-
