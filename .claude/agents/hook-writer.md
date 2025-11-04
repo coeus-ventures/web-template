@@ -33,7 +33,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import { useState } from 'react';
 import { z } from 'zod';
 import { [actionName] } from './actions/[action-name].action';
-import { [atomName] } from '@/app/(product)/[page]/state';
+import { [atomName] } from '@/app/(app)/[page]/state';
 
 // Define validation schema
 const [SchemaName] = z.object({
@@ -151,7 +151,7 @@ For every hook you create, consider:
 ## Examples to Study
 
 Before writing any hook, examine existing implementations in the codebase, particularly:
-- `/app/(product)/problems/behaviors/view-problems/use-view-problems.ts`
+- `/app/(app)/problems/behaviors/view-problems/use-view-problems.ts`
 - Any other hooks in the `behaviors/` folders
 
 These examples demonstrate the exact patterns and conventions you must follow.

@@ -1,40 +1,53 @@
 # Web Template
 
-A modern [Next.js](https://nextjs.org) starter template with database, testing, and AI-powered tools built-in.
+A production-ready [Next.js](https://nextjs.org) application template with authentication, database, testing, and AI-powered tools built-in.
 
 ## Features
 
 ✨ **Next.js 16** - Latest React framework with App Router
-🗄️ **Database Ready** - Drizzle ORM + SQLite/Turso with migrations
+🔐 **Authentication** - Better-auth with session management
+🗄️ **Database Ready** - Drizzle ORM + SQLite/Turso with migrations and gateway
 🧪 **Testing Suite** - Vitest (unit) + Playwright (E2E) + b-test (database testing)
-🤖 **AI Integration** - Vercel AI SDK with testing utilities
+🤖 **AI Integration** - Vercel AI SDK with LLM-powered test assertions
 ⚡ **Bun** - Fast package manager and runtime
 📝 **TypeScript** - Full type safety
-🎨 **Tailwind CSS** - Utility-first styling
+🎨 **Tailwind CSS 4** - Utility-first styling
+🎭 **shadcn/ui** - Beautiful, accessible components
+🔧 **PM2 Ready** - Process management for development
 
 ## Tech Stack
 
 ### Core
-- **Next.js 16.0.0** - React framework with App Router
-- **React 19** - Latest React with concurrent features
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first CSS framework
+- **Next.js 16.0.0** - React framework with App Router and Turbopack
+- **React 19.2.0** - Latest React with concurrent features
+- **TypeScript 5** - Type-safe development
+- **Tailwind CSS 4** - Utility-first CSS framework
 - **Bun** - Fast JavaScript runtime and package manager
 
-### Database
-- **Drizzle ORM** - Type-safe SQL ORM
+### Database & Auth
+- **Drizzle ORM 0.44** - Type-safe SQL ORM with migrations
 - **LibSQL/SQLite** - Embedded database for development/testing
 - **Turso** - Serverless database for production (optional)
+- **Drizzle Gateway** - Database access gateway with token authentication
+- **Better Auth 1.3** - Modern authentication library with session management
 
 ### Testing
-- **Vitest 4** - Fast unit testing framework
-- **Playwright** - End-to-end browser testing
-- **b-test** - Custom database testing library (PreDB/PostDB)
-- **Tester** - AI-powered browser testing utilities
+- **Vitest 4** - Fast unit testing framework with jsdom
+- **Playwright 1.56** - End-to-end browser testing
+- **b-test** - Database testing library (PreDB/PostDB pattern)
+- **Tester** - LLM-powered assertions for browser testing
+- **Testing Library** - React component testing utilities
 
 ### AI/ML
-- **Vercel AI SDK** - AI integration toolkit
-- **OpenAI** - GPT models for testing assertions
+- **Vercel AI SDK 5** - AI integration toolkit
+- **OpenAI SDK** - GPT models for LLM-powered test assertions
+
+### UI Components
+- **shadcn/ui** - Beautiful, accessible, and customizable React components
+- **Radix UI** - Unstyled, accessible component primitives
+- **Lucide React** - Beautiful icon library
+- **React Hook Form** - Performant form validation
+- **Zod 4** - TypeScript-first schema validation
 
 ## Getting Started
 
@@ -67,11 +80,23 @@ bun run db:seed
 ### Development
 
 ```bash
-# Start development server
+# Start development server (default port 8080 with Turbopack)
 bun run dev
+
+# Or start with PM2 (dev server + drizzle gateway)
+bun run dev:start
+
+# View logs
+bun run dev:logs
+
+# Restart dev server
+bun run dev:restart
+
+# Start test environment server (port 3001)
+bun run dev:test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+Open [http://localhost:8080](http://localhost:8080) to view the application.
 
 ### Building for Production
 
@@ -149,14 +174,6 @@ bun run db:migrate
 bun run test
 ```
 
-### Migration Squashing
-
-When you accumulate too many migrations (50+), squash them for faster test startup:
-
-```bash
-bun run db:squash  # Combines all migrations into one
-```
-
 ## Testing
 
 ### Unit Tests (Vitest)
@@ -219,27 +236,40 @@ See `lib/b-test/README.md` for full documentation.
 ```
 .
 ├── app/                      # Next.js App Router
+│   ├── admin/               # Admin pages
+│   ├── auth/                # Authentication pages
+│   ├── home/                # Home pages
+│   ├── api/                 # API routes
 │   ├── layout.tsx           # Root layout
 │   └── page.tsx             # Homepage
+├── components/
+│   └── ui/                  # shadcn/ui components
 ├── db/
 │   ├── databases/           # SQLite files (gitignored)
 │   ├── migrations/          # Migration SQL files
 │   │   └── meta/            # Migration metadata
 │   ├── scripts/             # Database utilities
 │   │   ├── clean.ts         # Clear database
-│   │   ├── seed.ts          # Seed data
-│   │   └── squash.ts        # Migration squashing
+│   │   └── seed.ts          # Seed data
 │   ├── schema.ts            # Database schema
 │   └── index.ts             # Database client
 ├── lib/
-│   └── b-test/              # Database testing library
-│       ├── predb.ts         # Setup database state
-│       ├── postdb.ts        # Assert database state
-│       ├── tester.ts        # AI-powered browser testing
-│       └── tests/           # b-test test suite
+│   ├── b-test/              # Database testing library
+│   │   ├── predb.ts         # Setup database state
+│   │   ├── postdb.ts        # Assert database state
+│   │   ├── tester.ts        # LLM-powered browser testing
+│   │   └── tests/           # b-test test suite
+│   ├── drizzle-gateway/     # Database gateway
+│   ├── auth.ts              # Better-auth configuration
+│   ├── auth-client.ts       # Auth client utilities
+│   └── utils.ts             # Utility functions
+├── scripts/
+│   ├── drizzle-gateway/     # Gateway scripts
+│   ├── generate-token.ts    # Token generation
+│   └── check-token.ts       # Token validation
 ├── tests/
-│   ├── example.spec.ts      # Playwright tests
-│   └── example.test.ts      # Vitest tests
+│   ├── *.spec.ts            # Playwright E2E tests
+│   └── *.test.ts            # Vitest unit tests
 ├── public/                  # Static assets
 ├── drizzle.config.ts        # Drizzle ORM configuration
 ├── vitest.config.ts         # Vitest configuration
@@ -260,12 +290,26 @@ DATABASE_URL_TEST=":memory:"
 # Production Database (Turso - optional)
 # DATABASE_URL_PRODUCTION="libsql://your-database.turso.io"
 # TURSO_AUTH_TOKEN="your-auth-token"
+
+# Better Auth
+BETTER_AUTH_SECRET="your-secret-key-here"
+BETTER_AUTH_URL="http://localhost:8080"
+
+# OpenAI (for LLM-powered test assertions)
+OPENAI_API_KEY="your-openai-api-key"
+
+# Drizzle Gateway (optional)
+DRIZZLE_GATEWAY_TOKEN="your-gateway-token"
 ```
 
 ## Scripts Reference
 
 ### Development
-- `bun run dev` - Start development server
+- `bun run dev` - Start development server (port 8080 with Turbopack)
+- `bun run dev:start` - Start with PM2 (dev + drizzle gateway)
+- `bun run dev:logs` - View PM2 logs
+- `bun run dev:restart` - Restart PM2 dev server
+- `bun run dev:test` - Start test environment server (port 3001)
 - `bun run build` - Create production build
 - `bun run start` - Start production server
 - `bun run lint` - Run ESLint
@@ -278,11 +322,17 @@ DATABASE_URL_TEST=":memory:"
 - `bun run db:seed` - Seed database
 - `bun run db:clean` - Clear database
 - `bun run db:reset` - Reset database
-- `bun run db:squash` - Squash migrations
+
+### Gateway
+- `bun run drizzle:gateway` - Start Drizzle Gateway
+- `bun run drizzle:gateway:dev` - Start gateway with auto-reload
 
 ### Testing
 - `bun run test` - Run unit tests (Vitest)
 - `bun run spec` - Run E2E tests (Playwright)
+
+### UI Components
+- `bun run shadcn:add` - Add shadcn/ui components
 
 ## Best Practices
 
@@ -305,17 +355,51 @@ DATABASE_URL_TEST=":memory:"
 
 4. **Commit migrations** to version control
 
-5. **Squash old migrations** when you have 50+:
-   ```bash
-   bun run db:squash
-   ```
-
 ### Testing Database Code
 
 1. Use **PreDB** to set up initial state
 2. Run your database operations
 3. Use **PostDB** to verify final state
 4. Tests automatically use fresh in-memory database
+
+### Authentication
+
+This template uses **Better Auth** for authentication:
+
+1. Configure auth in `lib/auth.ts`
+2. Use auth client in components via `lib/auth-client.ts`
+3. Protected routes use middleware or server-side checks
+4. Session management is built-in
+
+### UI Components
+
+Add shadcn/ui components easily:
+
+```bash
+bun run shadcn:add button
+bun run shadcn:add form
+bun run shadcn:add dialog
+```
+
+Components are installed in `components/ui/` and fully customizable.
+
+### Process Management
+
+For production-like development with PM2:
+
+```bash
+# Start both dev server and drizzle gateway
+bun run dev:start
+
+# Monitor logs
+bun run dev:logs
+
+# Restart services
+bun run dev:restart
+
+# Stop all
+pm2 stop all
+```
 
 ### Package Management
 

@@ -19,7 +19,7 @@ Data flows one way: Frontend → Backend → Infrastructure. Never violate this 
 
 You organize code by pages with behavior-based grouping:
 ```
-/app/(product)/[feature]/
+/app/(app)/[page-name]/
   ├── page.tsx              # Next.js page component
   ├── state.ts              # Jotai atoms
   ├── components/           # Page-specific components

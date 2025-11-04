@@ -19,12 +19,12 @@ Behavior tests verify complete user workflows following the spec format from doc
 **CRITICAL: DO NOT USE MOCKS IN PLAYWRIGHT TESTS**
 - Playwright tests run in the browser context where `vi.mock()` does not work
 - Use direct navigation (`page.goto()`) instead of mocking authentication
-- Use `PreDB/PostDB` for database setup when needed
+- Use `PreState/PostState` for database setup when needed
 - Follow the simple pattern from `create-project.spec.ts` - no complex mocking required
 
 ### Location Pattern
 ```
-app/[page]/behaviors/[behavior-name]/tests/[behavior-name].spec.ts
+app/(app)/[page-name]/behaviors/[behavior-name]/tests/[behavior-name].spec.ts
 ```
 
 ### Example Structure (from create-project.spec.ts)
@@ -89,7 +89,7 @@ test.describe('Create Project Behavior', () => {
 ### Behavior Test Patterns
 - **NO MOCKING**: Never use `vi.mock()` or any Vitest mocking in Playwright tests
 - Use simple authentication: Navigate directly to pages without auth mocking
-- Use `PreDB/PostDB` for database setup if needed
+- Use `PreState/PostState` for database setup if needed
 - Use `test.afterEach` for cleanup
 - Use proper locators: `page.locator()`, `page.getByText()`, `page.getByRole()`
 - Set appropriate timeouts for async operations
@@ -98,60 +98,65 @@ test.describe('Create Project Behavior', () => {
 
 ## Test Type 2: Action Tests (.action.test.ts)
 
-Action tests verify server-side logic using PreDB/PostDB patterns for database state verification.
+Action tests verify server-side logic using PreState/PostState patterns for database state verification.
 
 ### Location Pattern
 ```
-app/[page]/behaviors/[behavior-name]/tests/[action-name].action.test.ts
+app/(app)/[page-name]/behaviors/[behavior-name]/tests/[action-name].action.test.ts
 ```
 
 ### Example Structure (from delete-page.action.test.ts)
 ```typescript
 import { describe, it, vi, beforeEach, afterEach } from 'vitest';
 import { deletePageAction } from '../delete-page.action';
-import { createTestUser, cleanupTestUser } from '@/app/client/home/tests/helpers';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { ProjectModel } from '@/models/project';
-import { PreDB } from '@/services/behave-test/predb';
-import { PostDB } from '@/services/behave-test/postdb';
+import { PreState } from '@/services/behave-test/prestate';
+import { PostState } from '@/services/behave-test/poststate';
 
 // Mock Next.js cache
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
-// Mock getUser
-let testUser: Awaited<ReturnType<typeof createTestUser>>;
+// Mock getUser with a test user
+const testUserId = 'test-user-id';
 vi.mock('@/lib/get-user', () => ({
-  getUser: () => Promise.resolve({ user: testUser }),
+  getUser: () => Promise.resolve({
+    user: {
+      id: testUserId,
+      email: 'test@example.com',
+      name: 'Test User'
+    }
+  }),
 }));
 
-describe('deletePageAction with PreDB/PostDB', () => {
+describe('deletePageAction with PreState/PostState', () => {
   let projectId: string;
   let pageId: string;
 
   beforeEach(async () => {
-    // Create test user
-    testUser = await createTestUser();
-
     // Create project directly in DB
     const project = await ProjectModel.create({
       name: 'Test Project',
       description: 'This is a test project',
-      userId: testUser.id,
+      userId: testUserId,
     });
 
     projectId = project.id;
   });
 
   afterEach(async () => {
-    await cleanupTestUser(testUser.id);
+    // Cleanup test data
+    if (projectId) {
+      await ProjectModel.cleanup(projectId);
+    }
   });
 
   it('should successfully delete page', async () => {
-    // Set up initial state with PreDB
-    await PreDB(db, schema, {
+    // Set up initial state with PreState
+    await PreState(db, schema, {
       pages: [
         {
           name: 'Test Page',
@@ -172,8 +177,8 @@ describe('deletePageAction with PreDB/PostDB', () => {
     // Execute the action
     await deletePageAction(pageId, projectId);
 
-    // Assert the final state with PostDB
-    await PostDB(db, schema, {
+    // Assert the final state with PostState
+    await PostState(db, schema, {
       pages: [],
       issues_table: [],
     });
@@ -184,10 +189,10 @@ describe('deletePageAction with PreDB/PostDB', () => {
 ### Action Test Patterns
 - Mock Next.js utilities (`next/cache`)
 - Mock authentication (`getUser`)
-- Use `createTestUser` and `cleanupTestUser` helpers
-- Use `PreDB` to set up initial database state
-- Use `PostDB` to verify final database state
+- Use `PreState` to set up initial database state
+- Use `PostState` to verify final database state
 - Test with real database operations (NODE_ENV=test)
+- Clean up test data in `afterEach` hooks
 
 ## Test Type 3: Hook Tests (.test.tsx)
 
@@ -195,7 +200,7 @@ Hook tests verify React hooks using Testing Library and Jotai state management.
 
 ### Location Pattern
 ```
-app/[page]/behaviors/[behavior-name]/tests/use-[hook-name].test.tsx
+app/(app)/[page-name]/behaviors/[behavior-name]/tests/use-[hook-name].test.tsx
 ```
 
 ### Example Structure (from use-delete-page.test.tsx)
@@ -333,10 +338,9 @@ describe('useDeletePage', () => {
 Tests run with `NODE_ENV=test` using an isolated test database.
 
 ### Helper Functions
-- `createTestUser()` - Creates a test user with proper auth setup
-- `cleanupTestUser(userId)` - Cleans up test user and related data
-- `PreDB()` - Sets up initial database state for action tests
-- `PostDB()` - Verifies final database state for action tests
+- `PreState()` - Sets up initial database state for tests (from `@/services/behave-test/prestate`)
+- `PostState()` - Verifies final database state for tests (from `@/services/behave-test/poststate`)
+- Model cleanup methods - Most models have a `cleanup()` method for test data removal
 
 ## When Writing Tests
 

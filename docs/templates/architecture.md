@@ -1,6 +1,6 @@
 # behave.js Architecture
 
-> A strict, uni-directional layering model that keeps React UI, client-side state, server logic, and persistence cleanly separated.
+> A simplified, uni-directional layering model that keeps React UI, client-side state, and server logic cleanly separated.
 
 ## Tech Stack
 
@@ -14,23 +14,21 @@
 - **Validation**: Zod
 - **State Management**: Jotai
 
-## 1 Three-Layer Architecture
+## 1 Two-Layer Architecture
 
 ```
-Frontend  →  Backend  →  Infrastructure
-(client)    (server)    (data/services)
+Frontend  →  Backend
+(client)    (server)
 ```
 
 | Layer              | Runs on | Core responsibilities                                                      | May import                     | **Must _not_** import / do                 |
 | ------------------ | ------- | -------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------ |
-| **Frontend**       | Browser | **Components**: Render UI, collect user input, consume custom hooks<br/>**Hooks**: Validate input (Zod), manage state, optimistic updates, call Actions | React, Zod, Jotai, Actions     | Database clients, server-only code, Models |
-| **Backend**        | Server  | **Actions**: Auth-aware business logic, external API calls<br/>**Routes**: API endpoints and server-side routing | Models, Services, auth/context utilities | React, `window`, Jotai atoms               |
-| **Infrastructure** | Server  | **Models**: Thin Active-Record wrappers over Drizzle tables<br/>**Services**: External integrations, complex business logic | Drizzle / SQL client, external APIs | JSX, `fetch` to own API, atoms, React hooks |
+| **Frontend**       | Browser | **Components**: Render UI, collect user input, consume custom hooks<br/>**Hooks**: Validate input (Zod), manage state, optimistic updates, call Actions | React, Zod, Jotai, Actions     | Database clients, Drizzle, server-only code |
+| **Backend**        | Server  | **Actions**: Auth-aware business logic, Drizzle queries, external API calls<br/>**Routes**: API endpoints and server-side routing<br/>**Services**: External integrations, complex business logic | Drizzle / SQL client, Services, external APIs, auth/context utilities | React, `window`, Jotai atoms               |
 
-**One-way flow**  
+**One-way flow**
 Data always moves left → right.
 
-- **Infrastructure** never calls **Backend** (Models/Services don't call Actions/Routes).
 - **Backend** never calls **Frontend** (Actions/Routes don't call Hooks/Components).
 - **Frontend** Components never contain server code or manage atoms directly.
 - **Frontend** Hooks never touch the database directly.
@@ -70,13 +68,12 @@ app/
           fetch-tasks.action.ts
           tests/
             fetch-tasks.action.test.ts
-models/
-  task.ts                         ← Infrastructure: Data models
 services/
-  email.ts                        ← Infrastructure: External services
+  email.ts                        ← Backend: External services
   notifications.ts
 lib/
   db.ts                           ← Drizzle client
+  schema.ts                       ← Drizzle schema definitions
 ```
 
 - Page folders are **singular** to match route segments.
@@ -291,38 +288,39 @@ export function useDeleteTask() {
 'use server';
 
 import { z } from 'zod';
-import { TaskModel } from '@/models/task';
+import { db } from '@/lib/db';
+import { tasks } from '@/lib/schema';
 
 const input = z.object({ title: z.string() });
 
 export async function createTask(data: unknown) {
   const { title } = input.parse(data);
-  return TaskModel.create({ title, completed: false });
+
+  const [row] = await db
+    .insert(tasks)
+    .values({
+      id: crypto.randomUUID(),
+      title,
+      completed: false
+    })
+    .returning();
+
+  return row;
 }
 ```
 
 ---
 
-### 3.5 Model `models/task.ts`
+### 3.5 Schema `lib/schema.ts`
 
 ```ts
-import { drizzle } from '@/lib/db';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
-export const tasks = drizzle.table('tasks', {
-  id: drizzle.text('id').primaryKey(),
-  title: drizzle.text('title'),
-  completed: drizzle.boolean('completed'),
+export const tasks = sqliteTable('tasks', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
 });
-
-export class TaskModel {
-  static async create(attrs: { title: string; completed: boolean }) {
-    const [row] = await drizzle
-      .insert(tasks)
-      .values({ ...attrs, id: crypto.randomUUID() })
-      .returning();
-    return row;
-  }
-}
 ```
 
 ---
@@ -334,8 +332,8 @@ flowchart LR
     TaskForm --> useCreateTask
     useCreateTask --|optimistic|--> TasksAtom
     useCreateTask --> CreateTaskAction
-    CreateTaskAction --> TaskModel
-    TaskModel --|DB row|--> CreateTaskAction
+    CreateTaskAction --> DrizzleDB[Drizzle DB Query]
+    DrizzleDB --|DB row|--> CreateTaskAction
     CreateTaskAction --|record|--> useCreateTask
     useCreateTask --|reconcile|--> TasksAtom
     TasksAtom --> TaskList
@@ -352,10 +350,8 @@ flowchart LR
 | - Components       | React Testing Library  | Mock custom hooks; assert rendered output & DOM events |
 | - Hooks            | React Testing Library + renderHook | Provide in-memory Jotai store; mock Actions         |
 | **Backend**        |                        |                                                     |
-| - Actions          | Vitest + test database | Use SQLite in-memory; real Models/Services, mocked externals |
+| - Actions          | Vitest + test database | Use SQLite in-memory; real Drizzle queries/Services, mocked externals |
 | - Routes           | Vitest + supertest     | Integration tests with mocked services              |
-| **Infrastructure** |                        |                                                     |
-| - Models           | Vitest + test database | Pure persistence tests                              |
 | - Services         | Vitest + mocked APIs   | Mock external dependencies; test business logic     |
 
 No cross-layer stubs: each test concerns one layer only.
