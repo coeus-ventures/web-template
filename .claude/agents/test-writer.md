@@ -30,7 +30,7 @@ app/(app)/[page-name]/behaviors/[behavior-name]/tests/[behavior-name].spec.ts
 ### Example Structure (from create-project.spec.ts)
 ```typescript
 import { expect, test } from '@playwright/test';
-import { Tester } from '@/services/behave-test/tester';
+import { Tester } from '@/lib/b-test/tester';
 import { ProjectModel } from '@/models/project';
 
 test.describe('Create Project Behavior', () => {
@@ -112,8 +112,8 @@ import { deletePageAction } from '../delete-page.action';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { ProjectModel } from '@/models/project';
-import { PreState } from '@/services/behave-test/prestate';
-import { PostState } from '@/services/behave-test/poststate';
+import { PreDB } from '@/lib/b-test/predb';
+import { PostDB } from '@/lib/b-test/postdb';
 
 // Mock Next.js cache
 vi.mock('next/cache', () => ({

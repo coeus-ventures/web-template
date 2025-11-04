@@ -1,12 +1,12 @@
 {
-  "version": "6",
+  "version": "7",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1761853503658,
-      "tag": "0000_public_shatterstar",
+      "when": 1762267402284,
+      "tag": "0000_chief_vindicator",
       "breakpoints": true
     }
   ]

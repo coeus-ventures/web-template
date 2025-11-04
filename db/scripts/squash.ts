@@ -2,19 +2,21 @@
  * Squash Drizzle migrations
  *
  * Usage:
- *   npm run db:squash                      # Delete all migrations, regenerate
- *   bun db/scripts/squash.ts --all         # Same as above
+ *   npm run db:squash                      # Delete all migrations, regenerate (default)
+ *   bun db/scripts/squash.ts               # Same as above (default behavior)
+ *   bun db/scripts/squash.ts --all         # Explicitly delete all migrations
  *   bun db/scripts/squash.ts --after 0010  # Delete migrations after 0010
  *
  * Based on community script from:
  * https://github.com/drizzle-team/drizzle-orm/discussions/3492
  */
 
+import 'dotenv/config';
 import { glob } from 'glob';
 import { rm, writeFile, mkdir } from 'fs/promises';
 import { parseArgs } from 'util';
 import { basename, dirname, join } from 'path';
-import journalData from '../migrations/meta/_journal.json';
+import { existsSync } from 'fs';
 
 // Parse migration number from filename (e.g., "0001_lumpy_meltdown" -> 1)
 function parseMigrationNumber(name: string): number {
@@ -86,9 +88,35 @@ async function main() {
 
   console.log('🔨 Squashing migrations...\n');
 
+  // Check if migrations folder exists
+  const migrationsExists = existsSync('./db/migrations');
+
+  if (!migrationsExists) {
+    console.log('ℹ️  No migrations folder found - nothing to squash');
+    console.log('✨ Run `npm run db:generate` to create your first migration\n');
+    return;
+  }
+
+  // Check if there are any migrations
+  const migrationFiles = await glob('./db/migrations/*.sql');
+
+  if (migrationFiles.length === 0) {
+    console.log('ℹ️  No migrations found - nothing to squash');
+    console.log('✨ Run `npm run db:generate` to create your first migration\n');
+    return;
+  }
+
   if (values.after) {
     console.log(`📌 Keeping migrations up to: ${values.after}`);
     console.log('🗑️  Deleting migrations after this point...\n');
+
+    // Check if journal exists
+    const journalPath = './db/migrations/meta/_journal.json';
+    if (!existsSync(journalPath)) {
+      console.error('❌ Journal file not found. Cannot use --after without a valid journal.');
+      console.error('   Run `npm run db:generate` first to create migrations.\n');
+      process.exit(1);
+    }
 
     // Get all migration files
     const filePaths = await glob('./db/migrations/*.sql');
@@ -100,9 +128,12 @@ async function main() {
     toSquash.names.forEach((name) => console.log(`  - ${name}`));
     console.log('');
 
-    // Update journal to remove squashed entries
+    // Load and update journal to remove squashed entries
+    const { readFile } = await import('fs/promises');
+    const journalContent = await readFile(journalPath, 'utf-8');
+    const journalData = JSON.parse(journalContent);
     const newEntries = journalData.entries.filter(
-      (entry: any) => !toSquash.names.includes(entry.tag)
+      (entry: { tag: string; when: number }) => !toSquash.names.includes(entry.tag)
     );
 
     const newJournal = JSON.stringify(
@@ -111,7 +142,7 @@ async function main() {
       2
     );
 
-    await writeFile('./db/migrations/meta/_journal.json', newJournal);
+    await writeFile(journalPath, newJournal);
     console.log('✅ Updated journal\n');
 
     // Delete migration SQL files
@@ -126,22 +157,34 @@ async function main() {
     }
     console.log(`✅ Deleted ${toSquash.snapshotPaths.length} snapshot files\n`);
 
-  } else if (values.all) {
+  } else if (values.all || (!values.after && !values.all)) {
+    // Default to --all if no arguments provided
     console.log('🗑️  Deleting ALL migrations...\n');
 
     // Remove entire migrations folder
     await rm('db/migrations', { recursive: true, force: true });
     await mkdir('db/migrations');
 
-    console.log('✅ All migrations deleted\n');
+    console.log('✅ All migrations deleted');
+
+    // Delete development database file
+    const dbUrl = process.env.DATABASE_URL_DEVELOPMENT!;
+    const dbPath = dbUrl.replace('file:', '');
+
+    if (existsSync(dbPath)) {
+      await rm(dbPath, { force: true });
+      console.log('✅ Development database deleted');
+    }
+
+    console.log('');
   } else {
     console.error('❌ Please specify --after <migration> or --all');
     process.exit(1);
   }
 
   console.log('✨ Done! Next steps:');
-  console.log('  1. npm run db:generate  # Generate fresh migration from current schema');
-  console.log('  2. Reset your databases (dev/test/prod) to apply the squashed migration');
+  console.log('  1. bun run db:generate  # Generate fresh migration from current schema');
+  console.log('  2. bun run db:migrate   # Apply the new migration to development database');
 }
 
 main().catch((err) => {
