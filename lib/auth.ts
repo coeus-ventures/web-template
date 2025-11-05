@@ -7,7 +7,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { admin } from "better-auth/plugins";
 import { magicLink } from "better-auth/plugins";
-import { magicLinkUpsertAction } from "@/app/auth/behaviors/magic-link/actions/magic-link-upsert.action";
+import { MagicLink } from "@/models/magic-link";
 
 export const auth = betterAuth({
   plugins: [
@@ -42,11 +42,11 @@ export const auth = betterAuth({
         }
 
         try {
-          await magicLinkUpsertAction(
+          await MagicLink.upsert(
             cid,
             email,
             finalUrl,
-            new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+            Date.now() + 5 * 60 * 1000 // 5 minutes
           );
         } catch (error) {
           console.error("Failed to store magic link:", error);

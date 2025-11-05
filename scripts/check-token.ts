@@ -21,7 +21,7 @@ async function checkToken() {
     console.log("Token not found in database");
   } else {
     const record = results[0];
-    const now = new Date();
+    const now = Date.now();
 
     console.log("Token found:");
     console.log(`- Email: ${record.email}`);
