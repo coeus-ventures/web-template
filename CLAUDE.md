@@ -390,15 +390,19 @@ DRIZZLE_GATEWAY_TOKEN="your-gateway-token"
 - `hook-writer.md` - Creates React hooks
 
 ### Commands (`.claude/commands/`)
-- `/build` - Build features from specs
-- `/document` - Generate documentation
-- `/plan` - Create project plans
+- `/execute @docs/issues/[issue-file].md` - Execute an issue following Behave.js architecture
+- `/build` - Build all issues in sequence from docs/issues/
+- `/spec [project description]` - Create project spec with MVP pages and behaviors
+- `/plan @docs/issues/[issue-file].md` - Update issue file with detailed implementation plan
+- `/run @docs/issues/[issue-file].md` - Complete an issue by planning and implementing it
+- `/document path/to/behavior/directory` - Document a behavior by analyzing its implementation
+- `/break @SPEC.md` - Break spec into individual implementation issues
 
 ### Skills (`.claude/skills/`)
-- `pdf` - PDF manipulation
-- `skill-creator` - Create new skills
-- `write-issue` - Issue creation
-- `write-unit-test` - Test generation
+- `create-skill` - Guide for creating effective skills
+- `pdf` - PDF manipulation toolkit
+- `write-issue` - Create or update project issues
+- `write-unit-test` - Generate behavioral unit tests from functional specs
 
 ## Key Architectural Decisions
 

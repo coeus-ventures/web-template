@@ -1,3 +1,8 @@
+---
+description: Document a behavior by analyzing its implementation
+argument-hint: path/to/behavior/directory
+---
+
 # Document
 
 Instructions: $ARGUMENTS (path to behavior directory)

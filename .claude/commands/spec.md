@@ -1,4 +1,9 @@
-# Spec 
+---
+description: Create project spec with MVP pages and behaviors
+argument-hint: project description or requirements
+---
+
+# Spec
 
 Instructions: $ARGUMENTS
 

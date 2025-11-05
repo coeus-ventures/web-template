@@ -1,3 +1,8 @@
+---
+description: Update issue file with detailed implementation plan
+argument-hint: @docs/issues/[issue-file].md
+---
+
 # Plan
 
 Instructions: $ARGUMENTS
@@ -10,8 +15,10 @@ Instructions: $ARGUMENTS
   - Fix [name of the bug] in [name of the behavior]
   - Change design of [name of the component/page] to X
   - Implement design of [name of the component/page] 
-- Think step by step and be strategic following the architecture.
-- Only change the necessary files if the behavior or component already exist. 
-- Make only the most important test cases. The test cases should take inspiration from the Examples provided in the Functional Specification when applicable, even on the unit tests. 
-- Only Update the issue file, don't start implementing yet.
+
+1. Navigate to the page folder if it already exist to understand what is already implemented before writring the plan. Also look at the current schema.ts if necessary. Don't change anything, you are only exploring in this phase.
+2. Update the issue plan file with a a plan following the issue template. Only Update the issue file, don't start implementing yet. Instructions for your plan:
+   - If the behavior or component already exist focus on what needs to change.
+   - Make only the most important test cases. The test cases should take inspiration from the Examples provided in the Functional Specification when applicable, even on the unit tests. 
+
 
