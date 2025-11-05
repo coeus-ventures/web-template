@@ -4,7 +4,20 @@ Instructions: $ARGUMENTS
 
 This command guides you through building a complete feature following the Behave.js architecture patterns. Each step utilizes specialized agents that are experts in their domain. Follow each step in order, using the appropriate agent for each part of the implementation.
 
-## Agent-Powered Development
+## Prototype Issue
+
+IF the issue is to implement a Page prototype, only implement the Page.tsx and the components. 
+
+First setup the basic folder structure
+
+app/(app)/[page-name]
+-- behaviors/
+-- components/
+-- page.tsx
+-- state.ts (empty)
+
+
+## Behavior Issue
 
 This build process leverages specialized agents for each layer of the architecture:
 

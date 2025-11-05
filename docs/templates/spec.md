@@ -10,13 +10,13 @@
 
 ### Components
 
-- [ComponentName]
-- [ComponentName]
+- **[ComponentName]**: [Single sentence describing what this component displays or does]
+- **[ComponentName]**: [Single sentence describing what this component displays or does]
 
 ### Behaviors
 
-- [verb] [subject]
-- [verb] [subject]
+- **[verb] [subject]**: [Single sentence describing what happens when user performs this action]
+- **[verb] [subject]**: [Single sentence describing what happens when user performs this action]
 
 ## [Page Name]
 
@@ -24,10 +24,10 @@
 
 ### Components
 
-- [ComponentName]
-- [ComponentName]
+- **[ComponentName]**: [Single sentence describing what this component displays or does]
+- **[ComponentName]**: [Single sentence describing what this component displays or does]
 
 ### Behaviors
 
-- [verb] [subject]
-- [verb] [subject]
+- **[verb] [subject]**: [Single sentence describing what happens when user performs this action]
+- **[verb] [subject]**: [Single sentence describing what happens when user performs this action]

@@ -1,12 +1,12 @@
 import { readFileSync } from 'fs';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { SQLiteTable } from 'drizzle-orm/sqlite-core';
+import type { SQLiteTable, SQLiteColumn } from 'drizzle-orm/sqlite-core';
 
 export type StateObject = Record<string, Record<string, unknown>[]>;
 
 export type PreDBOptions = {
-  /** Delete all rows in targeted tables before inserting. Default: true */
+  /** Delete all rows in targeted tables before inserting. Default: false */
   wipe?: boolean;
   /** Reset auto-increment sequences for targeted tables (best-effort for SQLite). Default: true */
   resetSequences?: boolean;
@@ -35,7 +35,7 @@ export async function PreDB<TSchema extends Record<string, unknown>>(
   opts?: PreDBOptions
 ): Promise<void> {
   const options = {
-    wipe: true,
+    wipe: false,
     resetSequences: true,
     ...opts
   };
@@ -142,8 +142,17 @@ export async function PreDB<TSchema extends Record<string, unknown>>(
       if (rows && rows.length > 0) {
         const table = tableMap.get(tableName);
         if (table) {
-          // Insert rows one by one to handle different column sets
+          // Insert rows one by one, checking for existence by ID if present
           for (const row of rows) {
+            // If row has an 'id' field, check if it already exists
+            if (row.id !== undefined && 'id' in table) {
+              const idColumn = table.id as SQLiteColumn;
+              const existing = await db.select().from(table).where(eq(idColumn, row.id)).limit(1);
+              if (existing.length > 0) {
+                // Skip insertion if record already exists
+                continue;
+              }
+            }
             await db.insert(table).values(row);
           }
         }

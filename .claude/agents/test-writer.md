@@ -12,7 +12,7 @@ You are an expert test engineer for the Behave.js application. You write three t
 2. **Action Tests** (.action.test.ts) - Server action tests using Vitest
 3. **Hook Tests** (.test.tsx) - React hook tests using Testing Library
 
-## Test Type 1: Behavior Tests (.spec.ts)
+## 1. Behavior Tests (.spec.ts)
 
 Behavior tests verify complete user workflows following the spec format from docs/spec.md.
 
@@ -27,76 +27,92 @@ Behavior tests verify complete user workflows following the spec format from doc
 app/(app)/[page-name]/behaviors/[behavior-name]/tests/[behavior-name].spec.ts
 ```
 
-### Example Structure (from create-project.spec.ts)
+### Example Structure with PreDB/PostDB (from add-contact.spec.ts)
 ```typescript
 import { expect, test } from '@playwright/test';
-import { Tester } from '@/lib/b-test/tester';
-import { ProjectModel } from '@/models/project';
+import { db } from '@/db';
+import * as schema from '@/db/schema';
+import { PreDB, PostDB } from '@/lib/b-test';
 
-test.describe('Create Project Behavior', () => {
+test.describe('Add Contact Behavior', () => {
+  // Use authenticated session
+  test.use({ storageState: 'playwright/.auth/user.json' });
 
-  test.afterEach(async () => {
-    // Cleanup database after each test
-    const projects = await ProjectModel.findAll();
+  test('creates a new contact successfully', async ({ page }) => {
+    // PreDB: Clear contacts table before test (preserve user/account for auth)
+    // This ensures we start with a clean slate
+    await PreDB(db, schema, {
+      contacts: [],
+    }, { only: ['contacts'] }); // Only wipe contacts table, not user/account
 
-    for (const project of projects) {
-      try {
-        await ProjectModel.cleanup(project.id);
-      } catch (err) {
-        console.error('Error deleting project during cleanup:', err);
-      }
-    }
-  });
-
-  test('creates a new project successfully', async ({ page }) => {
-
-    await page.goto('/client/home');
+    // Navigate to contacts page
+    await page.goto('/contacts');
 
     // Wait for page to be fully loaded
-    await expect(page.locator('h1')).toContainText('Write your product into existence');
+    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
 
-    // Fill the input with project description
-    const textarea = page.locator('textarea[placeholder*="Describe your project idea"]');
-    await textarea.fill('Create a personal CRM');
+    // Click the "Add Contact" button
+    const addButton = page.locator('[data-testid="add-contact-button"]');
+    await addButton.click();
 
-    // Submit the form
-    const submitButton = page.locator('button[type="submit"]');
-    await submitButton.click();
+    // Wait for dialog to open
+    await expect(page.locator('role=dialog')).toBeVisible({ timeout: 5000 });
 
-    // Wait for the "Name your project" step
-    await expect(page.getByText('Name your project')).toBeVisible({ timeout: 30000 });
+    // Fill in the form fields
+    await page.locator('[data-testid="contact-name-input"]').fill('John Doe');
+    await page.locator('[data-testid="contact-email-input"]').fill('john@example.com');
+    await page.locator('[data-testid="contact-phone-input"]').fill('+1 (555) 123-4567');
+    await page.locator('[data-testid="contact-company-input"]').fill('Tech Solutions');
+    await page.locator('[data-testid="contact-notes-input"]').fill('Met at conference');
 
-    // Click to confirm name (Next button)
-    const nextButton = page.locator('button:has-text("Next")');
-    await nextButton.click();
+    // Click "Save Contact" button
+    const saveButton = page.locator('[data-testid="save-contact-button"]');
+    await saveButton.click();
 
-    // Wait for the project confirmation (Ready screen)
-    await expect(page.getByText('Your Project is Ready!')).toBeVisible({ timeout: 60000 });
+    // Verify dialog closes
+    await expect(page.locator('role=dialog')).not.toBeVisible({ timeout: 5000 });
 
-    // Click Start Building
-    const startBuildingButton = page.locator('button:has-text("Start Building")');
-    await startBuildingButton.click();
+    // Verify success toast appears
+    await expect(page.getByText('Contact created successfully')).toBeVisible({ timeout: 5000 });
 
-    // Verify navigation to project pages
-    await page.waitForURL(/\/client\/pages\/.*/, { timeout: 30000 });
+    // Verify new contact appears in the contacts list
+    await expect(page.getByText('John Doe')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('john@example.com')).toBeVisible();
+    await expect(page.getByText('Tech Solutions')).toBeVisible();
 
-    // Wait for database operations to complete
-    await page.waitForTimeout(2000);
+    // PostDB: Verify the contact was actually saved to the database
+    // Note: Don't include auto-generated fields like userId in expected data
+    await PostDB(db, schema, {
+      contacts: [
+        {
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '+1 (555) 123-4567',
+          company: 'Tech Solutions',
+          notes: 'Met at conference',
+        },
+      ],
+    }, { loose: true }); // loose: true ignores auto-generated fields (id, createdAt, updatedAt)
   });
 });
 ```
 
 ### Behavior Test Patterns
+- **ALWAYS USE PreDB/PostDB**: Set up deterministic state and verify database changes
+- **PreDB with `only` option**: Clear only the tables being tested, preserve user/account for authentication
+- **PostDB with `loose: true`**: Ignore auto-generated fields (id, createdAt, updatedAt, and any dynamically generated fields)
+- **Don't include dynamic fields**: Omit fields like userId if they're generated by the system (e.g., from auth session)
+- **Authentication**: Use `test.use({ storageState: 'playwright/.auth/user.json' })` for authenticated tests
 - **NO MOCKING**: Never use `vi.mock()` or any Vitest mocking in Playwright tests
 - Use simple authentication: Navigate directly to pages without auth mocking
 - Use `PreDB/PostDB` for database setup if needed
 - Use `test.afterEach` for cleanup
-- Use proper locators: `page.locator()`, `page.getByText()`, `page.getByRole()`
+- Use proper locators: `page.locator()`, `page.getByText()`
 - Set appropriate timeouts for async operations
 - Verify both UI state and navigation
 - Clean up test data after each test
 
-## Test Type 2: Action Tests (.action.test.ts)
+## 2. Action Tests (.action.test.ts)
 
 Action tests verify server-side logic using PreDB/PostDB patterns for database state verification.
 
@@ -194,7 +210,7 @@ describe('deletePageAction with PreState/PostState', () => {
 - Test with real database operations (NODE_ENV=test)
 - Clean up test data in `afterEach` hooks
 
-## Test Type 3: Hook Tests (.test.tsx)
+## 3. Hook Tests (.test.tsx)
 
 Hook tests verify React hooks using Testing Library and Jotai state management.
 

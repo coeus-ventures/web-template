@@ -2,7 +2,7 @@
 
 Instructions: $ARGUMENTS
 
-- Update the issue file in the instructions by following the @docs/templates/issue.md format. 
+- Update the issue file in the instructions by following the @docs/templates/behavior-issue.md format if this is a behavior related issue or the @docs/templates/page-issue.md 
 
 - Issues tend to follow this naming convention:
   - Implement [name of the behavior]
