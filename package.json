@@ -21,7 +21,6 @@
     "db:clean": "bun db/scripts/clean.ts",
     "db:squash": "bun db/scripts/squash.ts",
     "db:reset": "bun db/scripts/clean.ts && bun run db:push",
-    "db:squash": "bun db/scripts/squash.ts",
     "drizzle:gateway": "bun run scripts/drizzle-gateway/gateway-starter.ts",
     "drizzle:gateway:dev": "bun --watch scripts/drizzle-gateway/gateway-starter.ts",
     "shadcn:add": "npx shadcn@latest add"
