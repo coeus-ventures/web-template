@@ -243,7 +243,7 @@ When creating components, verify:
 When schema changes are needed:
 1. Add table definition to `/db/schema.ts`
 2. Create corresponding model in `/models/[table-name].ts`
-3. Run `npm run db:push` to apply changes
+3. Run `bun run db:push` to apply changes
 4. Never access database directly from components or hooks
 
 ## Error Patterns to Avoid

@@ -116,7 +116,7 @@ Utilities for deterministic database testing (see existing documentation).
 Run all tests including real Playwright integration:
 
 ```bash
-npm test services/behave-test/tests/tester.test.ts
+bun test services/behave-test/tests/tester.test.ts
 ```
 
 The tests use real Playwright browsers for authentic testing of HTML capture and page interactions.

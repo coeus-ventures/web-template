@@ -59,7 +59,6 @@ bun run dev              # Port 8080 with Turbopack
 bun run dev:start        # PM2: dev server + drizzle gateway
 bun run dev:logs         # View PM2 logs
 bun run dev:restart      # Restart PM2 dev server
-bun run dev:test         # Test environment server (port 3001)
 
 # Build & Deploy
 bun run build            # Production build

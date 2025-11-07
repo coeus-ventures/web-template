@@ -108,7 +108,7 @@ The test-writer will create a single test case using:
 
 **Run the test:**
 ```bash
-npm run test [action-name].action.test.ts
+bun run test [action-name].action.test.ts
 ```
 
 ## 4. Create or Update Hooks
@@ -141,7 +141,7 @@ The test-writer will create a single test case using:
 
 **Run the test:**
 ```bash
-npm run test use-[behavior].test.tsx
+bun run test use-[behavior].test.tsx
 ```
 
 ## 5. Create or Update Components
@@ -185,7 +185,7 @@ The test-writer will create a single Playwright test that:
 ### Running the Behavior Test:
 
 ```bash
-npm run spec [behavior-name].spec.ts
+bun run spec [behavior-name].spec.ts
 ```
 
 **Check the logs after test completes:**
@@ -213,7 +213,7 @@ This shows the last 100 lines of logs to see what happened during the test.
 1. Fix the identified issues
 2. Re-run the behavior test:
    ```bash
-   npm run spec [behavior-name].spec.ts
+   bun run spec [behavior-name].spec.ts
    ```
 3. Check logs again if needed:
    ```bash
@@ -278,7 +278,7 @@ The build command includes comprehensive debug logging for all layers:
 **Usage during testing:**
 1. Run your Playwright test:
    ```bash
-   npm run spec behavior.spec.ts
+   bun run spec behavior.spec.ts
    ```
 2. After test completes, check the logs:
    ```bash

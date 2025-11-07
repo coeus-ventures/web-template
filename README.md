@@ -69,6 +69,10 @@ bun install
 # Set up environment variables
 cp .env.example .env
 
+# IMPORTANT: Generate a secure secret for Better Auth
+# Open .env and set BETTER_AUTH_SECRET to a random string (min 32 characters)
+# You can generate one with: openssl rand -base64 32
+
 # Initialize the database
 bun run db:generate  # Generate migrations
 bun run db:migrate   # Apply migrations
@@ -291,8 +295,9 @@ DATABASE_URL_TEST=":memory:"
 # DATABASE_URL_PRODUCTION="libsql://your-database.turso.io"
 # TURSO_AUTH_TOKEN="your-auth-token"
 
-# Better Auth
-BETTER_AUTH_SECRET="your-secret-key-here"
+# Better Auth (REQUIRED)
+# Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET="your-secret-key-here"  # MUST be at least 32 characters
 BETTER_AUTH_URL="http://localhost:8080"
 
 # OpenAI (for LLM-powered test assertions)

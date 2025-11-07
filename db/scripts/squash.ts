@@ -2,7 +2,7 @@
  * Squash Drizzle migrations
  *
  * Usage:
- *   npm run db:squash                      # Delete all migrations, regenerate (default)
+ *   bun run db:squash                      # Delete all migrations, regenerate (default)
  *   bun db/scripts/squash.ts               # Same as above (default behavior)
  *   bun db/scripts/squash.ts --all         # Explicitly delete all migrations
  *   bun db/scripts/squash.ts --after 0010  # Delete migrations after 0010
@@ -93,7 +93,7 @@ async function main() {
 
   if (!migrationsExists) {
     console.log('ℹ️  No migrations folder found - nothing to squash');
-    console.log('✨ Run `npm run db:generate` to create your first migration\n');
+    console.log('✨ Run `bun run db:generate` to create your first migration\n');
     return;
   }
 
@@ -102,7 +102,7 @@ async function main() {
 
   if (migrationFiles.length === 0) {
     console.log('ℹ️  No migrations found - nothing to squash');
-    console.log('✨ Run `npm run db:generate` to create your first migration\n');
+    console.log('✨ Run `bun run db:generate` to create your first migration\n');
     return;
   }
 
@@ -114,7 +114,7 @@ async function main() {
     const journalPath = './db/migrations/meta/_journal.json';
     if (!existsSync(journalPath)) {
       console.error('❌ Journal file not found. Cannot use --after without a valid journal.');
-      console.error('   Run `npm run db:generate` first to create migrations.\n');
+      console.error('   Run `bun run db:generate` first to create migrations.\n');
       process.exit(1);
     }
 
