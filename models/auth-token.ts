@@ -10,6 +10,7 @@ export const AuthToken = {
     email: string,
     callbackUrl?: string,
     uaHash?: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _ttlMs: number = 10 * 60 * 1000 // Still accept parameter for compatibility (not used - tokens have 100 year expiry)
   ): Promise<{ token: string; url: string }> {
     const token = randomUUID();

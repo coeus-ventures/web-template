@@ -102,16 +102,6 @@ bun run dev:test
 
 Open [http://localhost:8080](http://localhost:8080) to view the application.
 
-### Building for Production
-
-```bash
-# Create production build
-bun run build
-
-# Start production server
-bun run start
-```
-
 ## Database
 
 ### Architecture
@@ -315,8 +305,6 @@ DRIZZLE_GATEWAY_TOKEN="your-gateway-token"
 - `bun run dev:logs` - View PM2 logs
 - `bun run dev:restart` - Restart PM2 dev server
 - `bun run dev:test` - Start test environment server (port 3001)
-- `bun run build` - Create production build
-- `bun run start` - Start production server
 - `bun run lint` - Run ESLint
 
 ### Database

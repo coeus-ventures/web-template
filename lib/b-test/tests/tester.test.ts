@@ -14,6 +14,7 @@ import {
   type BrowserContext,
   type Page,
 } from 'playwright';
+import { JSDOM } from 'jsdom';
 import { Tester, TesterError } from '../tester';
 
 // Mock only the AI SDK to avoid API calls
@@ -83,7 +84,6 @@ describe('Tester Service', () => {
   describe('assert()', () => {
     beforeEach(async () => {
       // Setup DOM environment for assert testing (since it uses diff)
-      const { JSDOM } = require('jsdom');
       const dom = new JSDOM();
       global.DOMParser = dom.window.DOMParser;
 
@@ -92,7 +92,8 @@ describe('Tester Service', () => {
       vi.mocked(generateText).mockResolvedValue({
         text: 'true - The condition is met',
         finishReason: 'stop',
-        usage: {} as any,
+        usage: {},
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     });
 
@@ -112,7 +113,6 @@ describe('Tester Service', () => {
   describe('diff()', () => {
     beforeEach(() => {
       // Setup DOM environment for diff testing
-      const { JSDOM } = require('jsdom');
       const dom = new JSDOM();
       global.DOMParser = dom.window.DOMParser;
     });
@@ -141,7 +141,6 @@ describe('Tester Service', () => {
   describe('waitFor()', () => {
     it('should poll until condition is met', async () => {
       // Setup DOM environment
-      const { JSDOM } = require('jsdom');
       const dom = new JSDOM();
       global.DOMParser = dom.window.DOMParser;
 
@@ -151,11 +150,13 @@ describe('Tester Service', () => {
           text: 'false - not yet',
           finishReason: 'stop',
           usage: {},
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
         .mockResolvedValueOnce({
           text: 'true - found it',
           finishReason: 'stop',
           usage: {},
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
 
       // Take initial snapshot so waitFor has a before state

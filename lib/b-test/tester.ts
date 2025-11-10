@@ -174,8 +174,9 @@ Based on these changes, is this condition met? (respond with true/false and expl
         afterAccessibility = await this.page.accessibility.snapshot();
 
         // For before state, we'll just note that it was different
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         beforeAccessibility = null; // We don't store accessibility in snapshots yet
-      } catch (error) {
+      } catch {
         // Fallback to basic HTML diff if accessibility tree fails
         return {
           changes: [{
@@ -190,18 +191,21 @@ Based on these changes, is this condition met? (respond with true/false and expl
       }
 
       // Create a simplified representation of the current page
-      const getPageElements = (snapshot: any): string[] => {
+      const getPageElements = (snapshot: unknown): string[] => {
         const elements: string[] = [];
 
-        const traverse = (node: any) => {
-          if (node.role) {
-            let elementDesc = node.role;
-            if (node.name) elementDesc += `: "${node.name}"`;
-            if (node.value) elementDesc += ` = "${node.value}"`;
-            elements.push(elementDesc);
-          }
-          if (node.children) {
-            node.children.forEach(traverse);
+        const traverse = (node: unknown) => {
+          if (node && typeof node === 'object') {
+            const n = node as { role?: string; name?: string; value?: string; children?: unknown[] };
+            if (n.role) {
+              let elementDesc = n.role;
+              if (n.name) elementDesc += `: "${n.name}"`;
+              if (n.value) elementDesc += ` = "${n.value}"`;
+              elements.push(elementDesc);
+            }
+            if (n.children) {
+              n.children.forEach(traverse);
+            }
           }
         };
 

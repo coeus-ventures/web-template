@@ -32,6 +32,7 @@ async function cleanDatabase() {
 
     for (const [tableName, table] of reversedTables) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await db.delete(table as SQLiteTable<any>);
         console.log(`✓ Cleared table: ${tableName}`);
       } catch (error) {
