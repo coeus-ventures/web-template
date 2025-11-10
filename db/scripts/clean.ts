@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { sql } from 'drizzle-orm';
-import { SQLiteTable } from 'drizzle-orm/sqlite-core';
+import { SQLiteTable, type TableConfig } from 'drizzle-orm/sqlite-core';
 import * as schema from '../schema';
 import { db } from '../index';
 
@@ -32,11 +32,18 @@ async function cleanDatabase() {
 
     for (const [tableName, table] of reversedTables) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await db.delete(table as SQLiteTable<any>);
+        await db.delete(table as SQLiteTable<TableConfig>);
         console.log(`✓ Cleared table: ${tableName}`);
       } catch (error) {
-        console.log(`⚠️  Could not clear table ${tableName}:`, error);
+        // Silently skip tables that don't exist (database not initialized)
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorCause = error instanceof Error && error.cause ? String(error.cause) : '';
+
+        if (errorMsg.includes('no such table') || errorCause.includes('no such table')) {
+          console.log(`⊘ Skipped ${tableName} (table does not exist)`);
+        } else {
+          console.log(`⚠️  Could not clear table ${tableName}:`, error);
+        }
       }
     }
 
