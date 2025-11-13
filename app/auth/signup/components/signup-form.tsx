@@ -1,6 +1,8 @@
 "use client";
 
 import { useSignup } from "../behaviors/signup/use-signup";
+import { signOutAction } from "./signout-action";
+import { useTransition } from "react";
 
 // Simple Lock Icon for Password Field
 const LockIcon = () => (
@@ -40,6 +42,14 @@ interface SignUpFormProps {
 
 export default function SignUpForm({ redirectURL }: SignUpFormProps) {
   const { state, formAction, isLoading } = useSignup(redirectURL);
+  const [isPending, startTransition] = useTransition();
+  const isAlreadyLoggedInError = state.error?.includes("already logged in");
+
+  const handleSignOut = () => {
+    startTransition(async () => {
+      await signOutAction();
+    });
+  };
 
   return (
     <form action={formAction} className="space-y-6">
@@ -51,9 +61,19 @@ export default function SignUpForm({ redirectURL }: SignUpFormProps) {
           <span className="text-xs font-mono text-red-400 absolute -top-2 -left-2 bg-gray-50 px-1">
             ERROR
           </span>
-          <span className="block font-mono text-red-700 text-sm mt-2">
-            {state.error}
-          </span>
+          <div className="block font-mono text-red-700 text-sm mt-2">
+            <span>{state.error}</span>
+            {isAlreadyLoggedInError && (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isPending}
+                className="ml-2 underline font-semibold hover:text-red-900 disabled:opacity-50 cursor-pointer"
+              >
+                {isPending ? "Signing out..." : "Sign out"}
+              </button>
+            )}
+          </div>
         </div>
       )}
 

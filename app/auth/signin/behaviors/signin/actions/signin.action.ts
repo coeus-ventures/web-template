@@ -5,6 +5,7 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import { authErrorHandler, throwAuthError } from "@/lib/auth-error";
 import { HOME_URL } from "@/app.config";
+import { getUser } from "@/lib/auth";
 
 interface ActionResult {
   error: string | null;
@@ -20,6 +21,11 @@ export async function signIn(
   formData: FormData,
   redirectURL: string
 ): Promise<ActionResult> {
+  const { user } = await getUser();
+  if (user) {
+    return { error: "You are already logged in. Please sign out first." };
+  }
+
   const raw = {
     email: formData.get("email"),
     password: formData.get("password"),

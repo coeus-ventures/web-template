@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Edit(**)",
+      "Write(**)",
+      "Bash(*)",
+      "Grep(**)",
+      "Glob(**)",
+      "NotebookEdit(**)",
+      "NotebookRead(**)",
+      "WebFetch(*)",
+      "Bash(bun run db:migrate)",
+      "Bash(bun run db:generate)",
+      "Bash(bun run db:push)",
+      "Bash(bun run build)",
+      "Bash(npm run build)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "acceptEdits",
+    "disableBypassPermissionsMode": false
+  },
+  "sandbox": {
+    "enabled": false,
+    "autoAllowBashIfSandboxed": true
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["next-devtools", "playwright"]
+}
