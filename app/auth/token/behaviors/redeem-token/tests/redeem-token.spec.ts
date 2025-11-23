@@ -2,6 +2,9 @@ import { test, expect } from "@playwright/test";
 
 const baseUrl = "http://localhost:8080";
 
+// Override storage state to test unauthenticated token flow
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe("User Token Authentication", () => {
   test.describe("Token Redemption Flow", () => {
     test("should authenticate user with valid token", async ({ page, context }) => {

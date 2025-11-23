@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { userSeed } from '@/db/seed/user.seed';
 
 const baseUrl = 'http://localhost:8080';
 
-const testUser = {
-    email: 'test@example.com',
-    password: 'testPassword123'
-}
+// Override storage state to test unauthenticated signin flow
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe('Signin Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -15,8 +14,8 @@ test.describe('Signin Flow', () => {
   test('should successfully signin with valid inputs', async ({ page }) => {
 
     // Fill in valid form data
-    await page.fill('input#email', testUser.email);
-    await page.fill('input#password', testUser.password);
+    await page.fill('input#email', userSeed.email);
+    await page.fill('input#password', userSeed.password);
     
     // Submit form
     await page.locator('button[type="submit"]').click();

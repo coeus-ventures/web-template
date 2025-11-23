@@ -5,6 +5,9 @@ import { eq } from "drizzle-orm";
 
 const baseUrl = "http://localhost:8080";
 
+// Override storage state to test unauthenticated signup flow
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe("Signup Flow", () => {
   const createdEmails: string[] = [];
 
