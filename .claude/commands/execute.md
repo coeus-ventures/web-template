@@ -9,21 +9,6 @@ Instructions: $ARGUMENTS
 
 This command guides you through executing a complete issue following the Behave.js architecture patterns. Each step utilizes specialized agents that are experts in their domain. Follow each step in order, using the appropriate agent for each part of the implementation.
 
-## Prototype Issue
-
-IF the issue is to implement a Page prototype, only implement the Page.tsx and the components. 
-
-First setup the basic folder structure
-
-app/(app)/[page-name]
--- behaviors/
--- components/
--- page.tsx
--- state.ts (empty)
-
-
-## Behavior Issue
-
 This build process leverages specialized agents for each layer of the architecture:
 
 | Agent | Purpose | Layer |
@@ -38,6 +23,20 @@ This build process leverages specialized agents for each layer of the architectu
 Each agent is an expert in their domain and follows the project's two-layer architecture patterns. They ensure consistency, include proper debug logging, and handle errors appropriately.
 
 **Prerequisites**: If the page.tsx the behavior belongs to doesn't exist yet, create an empty page with the 'use client' directive.
+
+# Steps to Execute the Issue
+
+Here is the order of steps to execute the issue: 
+
+1. Create or Update Services (if necessary)
+2. Create or Update State (Jotai Atoms)
+3. Create or Update Actions
+4. Create or Update Hooks
+5. Create or Update Components
+6. Create End-to-End Behavior Test
+
+Details for each step are provided below.
+
 
 ## 1. Create or Update Services (if necessary)
 

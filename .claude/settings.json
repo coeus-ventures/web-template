@@ -4,22 +4,17 @@
       "Read(**)",
       "Edit(**)",
       "Write(**)",
-      "Bash(*)",
+      "Bash",
       "Grep(**)",
       "Glob(**)",
       "NotebookEdit(**)",
       "NotebookRead(**)",
-      "WebFetch(*)",
-      "Bash(bun run db:migrate)",
-      "Bash(bun run db:generate)",
-      "Bash(bun run db:push)",
-      "Bash(bun run build)",
-      "Bash(npm run build)"
+      "WebFetch(domain:*)"
     ],
     "deny": [],
     "ask": [],
     "defaultMode": "acceptEdits",
-    "disableBypassPermissionsMode": false
+    "disableBypassPermissionsMode": "disable"
   },
   "sandbox": {
     "enabled": false,

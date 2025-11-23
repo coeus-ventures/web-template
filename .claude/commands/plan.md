@@ -10,11 +10,11 @@ Instructions: $ARGUMENTS
 - Update the issue file in the instructions by following the @docs/templates/behavior-issue.md format if this is a behavior related issue or the @docs/templates/page-issue.md 
 
 - Issues tend to follow this naming convention:
-  - Implement [name of the behavior]
-  - Change [name of the behavior] to X
+  - Implement [name of the behavior] in [name of the page]
+  - Implement [name of the page] components
+  - Change [name of the behavior] in [name of the page] to X
   - Fix [name of the bug] in [name of the behavior]
-  - Change design of [name of the component/page] to X
-  - Implement design of [name of the component/page] 
+  - Change design of [name of the component/page] in [name of the page] to X
 
 1. Navigate to the page folder if it already exist to understand what is already implemented before writring the plan. Also look at the current schema.ts if necessary. Don't change anything, you are only exploring in this phase.
 2. Update the issue plan file with a a plan following the issue template. Only Update the issue file, don't start implementing yet. Instructions for your plan:
