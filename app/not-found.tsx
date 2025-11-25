@@ -27,11 +27,10 @@ export default function NotFound() {
             404
           </h1>
           <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Page not found
+            Page under construction
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 text-base">
-            The page you&apos;re looking for doesn&apos;t exist, may have been
-            moved, or hasn&apos;t been built yet
+            The page you&apos;re looking for hasn&apos;t been built yet.
           </p>
         </div>
 
@@ -57,7 +56,7 @@ export default function NotFound() {
         {/* Decorative elements */}
         <div className="pt-8 border-t border-zinc-200 dark:border-zinc-800">
           <p className="text-sm text-zinc-500 dark:text-zinc-500">
-            Error 404 | Page not found
+            Error 404 | Page under construction
           </p>
         </div>
       </div>
