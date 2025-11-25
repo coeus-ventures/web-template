@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { getUser } from "@/lib/auth";
 import { signOut } from "./behaviors/signout/actions/signout";
+import { AuthHeader } from "./components/auth-header";
 
 export default async function AuthLayout({
   children,
@@ -13,6 +15,11 @@ export default async function AuthLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 bg-dotted-grid">{children}</div>
+    <div className="min-h-screen bg-linear-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-black">
+      <Suspense fallback={null}>
+        <AuthHeader />
+      </Suspense>
+      {children}
+    </div>
   );
 }
