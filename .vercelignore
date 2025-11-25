@@ -1,0 +1,26 @@
+# Development files
+logs/
+*.log
+
+# Test files
+playwright-report/
+test-results/
+coverage/
+
+# Database files (development only)
+db/databases/development.db
+db/databases/test.db
+
+# Environment files (should be set in Vercel dashboard)
+.env.local
+.env.development.local
+.env.test.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+

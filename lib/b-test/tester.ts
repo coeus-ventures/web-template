@@ -1,6 +1,6 @@
-import type { Page } from 'playwright';
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import type { Page } from "playwright";
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 export interface Snapshot {
   id: string;
@@ -11,7 +11,7 @@ export interface Snapshot {
 
 export interface DiffResult {
   changes: Array<{
-    type: 'added' | 'removed' | 'modified' | 'textdiff';
+    type: "added" | "removed" | "modified" | "textdiff";
     element: string;
     attributes?: Record<string, unknown>;
     oldValue?: unknown;
@@ -23,7 +23,7 @@ export interface DiffResult {
 export class TesterError extends Error {
   constructor(message: string, public readonly code: string) {
     super(message);
-    this.name = 'TesterError';
+    this.name = "TesterError";
   }
 }
 
@@ -40,7 +40,7 @@ export class Tester {
 
   constructor(
     private readonly page?: Page,
-    private readonly aiModel = openai('gpt-4o-mini')
+    private readonly aiModel = openai("gpt-4o-mini")
   ) {}
 
   /**
@@ -48,11 +48,13 @@ export class Tester {
    * @param page - Optional Playwright page to snapshot (uses constructor page if not provided)
    * @returns Success boolean and snapshot ID
    */
-  async snapshot(page?: Page): Promise<{ success: boolean; snapshotId: string }> {
+  async snapshot(
+    page?: Page
+  ): Promise<{ success: boolean; snapshotId: string }> {
     const targetPage = page || this.page;
 
     if (!targetPage) {
-      throw new TesterError('No page provided for snapshot', 'NO_PAGE');
+      throw new TesterError("No page provided for snapshot", "NO_PAGE");
     }
 
     try {
@@ -66,7 +68,7 @@ export class Tester {
         id: snapshotId,
         html,
         timestamp,
-        url
+        url,
       };
 
       // Store snapshot with unique identifier
@@ -85,8 +87,10 @@ export class Tester {
       return { success: true, snapshotId };
     } catch (error) {
       throw new TesterError(
-        `Failed to capture snapshot: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'SNAPSHOT_FAILED'
+        `Failed to capture snapshot: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        "SNAPSHOT_FAILED"
       );
     }
   }
@@ -106,30 +110,34 @@ export class Tester {
         model: this.aiModel,
         messages: [
           {
-            role: 'system',
+            role: "system",
             content: `You are a testing assistant that evaluates page changes against conditions.
 Analyze the provided diff of changes and determine if the specified condition is met.
 Focus on what has changed in the page, not the entire content.
-Respond with only "true" or "false" followed by a brief explanation.`
+Respond with only "true" or "false" followed by a brief explanation.`,
           },
           {
-            role: 'user',
+            role: "user",
             content: `Page Changes:
 ${diffResult.summary}
 
 Changes Details:
-${diffResult.changes.map(c => `- ${c.type}: ${c.element} ${c.newValue ? `(${c.newValue})` : ''}`).join('\n')}
+${diffResult.changes
+  .map(
+    (c) => `- ${c.type}: ${c.element} ${c.newValue ? `(${c.newValue})` : ""}`
+  )
+  .join("\n")}
 
 Condition to check: "${condition}"
 
-Based on these changes, is this condition met? (respond with true/false and explanation)`
-          }
+Based on these changes, is this condition met? (respond with true/false and explanation)`,
+          },
         ],
-        temperature: 0
+        temperature: 0,
       });
 
       const result = response.text;
-      const isTrue = result.toLowerCase().startsWith('true');
+      const isTrue = result.toLowerCase().startsWith("true");
 
       // Log assertion result for test output
       console.log(`Assertion "${condition}": ${result}`);
@@ -137,8 +145,10 @@ Based on these changes, is this condition met? (respond with true/false and expl
       return isTrue;
     } catch (error) {
       throw new TesterError(
-        `Assertion failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'ASSERTION_FAILED'
+        `Assertion failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        "ASSERTION_FAILED"
       );
     }
   }
@@ -150,8 +160,8 @@ Based on these changes, is this condition met? (respond with true/false and expl
   async diff(): Promise<DiffResult> {
     if (!this.beforeSnapshot || !this.afterSnapshot) {
       throw new TesterError(
-        'Need both before and after snapshots for diff. Call snapshot() twice.',
-        'NO_SNAPSHOTS'
+        "Need both before and after snapshots for diff. Call snapshot() twice.",
+        "NO_SNAPSHOTS"
       );
     }
 
@@ -160,7 +170,7 @@ Based on these changes, is this condition met? (respond with true/false and expl
       if (this.beforeSnapshot.html === this.afterSnapshot.html) {
         return {
           changes: [],
-          summary: 'No changes detected'
+          summary: "No changes detected",
         };
       }
 
@@ -168,7 +178,7 @@ Based on these changes, is this condition met? (respond with true/false and expl
       let beforeAccessibility, afterAccessibility;
 
       try {
-        if (!this.page) throw new Error('No page available');
+        if (!this.page) throw new Error("No page available");
 
         // We need to capture the current accessibility tree as "after"
         afterAccessibility = await this.page.accessibility.snapshot();
@@ -179,14 +189,16 @@ Based on these changes, is this condition met? (respond with true/false and expl
       } catch {
         // Fallback to basic HTML diff if accessibility tree fails
         return {
-          changes: [{
-            type: 'modified' as const,
-            element: 'page-content',
-            attributes: {},
-            oldValue: 'previous page state',
-            newValue: 'current page state'
-          }],
-          summary: 'Page content has changed (HTML level)'
+          changes: [
+            {
+              type: "modified" as const,
+              element: "page-content",
+              attributes: {},
+              oldValue: "previous page state",
+              newValue: "current page state",
+            },
+          ],
+          summary: "Page content has changed (HTML level)",
         };
       }
 
@@ -195,8 +207,13 @@ Based on these changes, is this condition met? (respond with true/false and expl
         const elements: string[] = [];
 
         const traverse = (node: unknown) => {
-          if (node && typeof node === 'object') {
-            const n = node as { role?: string; name?: string; value?: string; children?: unknown[] };
+          if (node && typeof node === "object") {
+            const n = node as {
+              role?: string;
+              name?: string;
+              value?: string;
+              children?: unknown[];
+            };
             if (n.role) {
               let elementDesc = n.role;
               if (n.name) elementDesc += `: "${n.name}"`;
@@ -216,24 +233,31 @@ Based on these changes, is this condition met? (respond with true/false and expl
       const currentElements = getPageElements(afterAccessibility);
 
       // Generate a summary of what's visible on the page now
-      const summary = currentElements.length > 0
-        ? `Page now contains: ${currentElements.slice(0, 10).join(', ')}${currentElements.length > 10 ? '...' : ''}`
-        : 'Page content has changed';
+      const summary =
+        currentElements.length > 0
+          ? `Page now contains: ${currentElements.slice(0, 10).join(", ")}${
+              currentElements.length > 10 ? "..." : ""
+            }`
+          : "Page content has changed";
 
       return {
-        changes: [{
-          type: 'modified' as const,
-          element: 'page-accessibility-tree',
-          attributes: {},
-          oldValue: 'previous state',
-          newValue: summary
-        }],
-        summary
+        changes: [
+          {
+            type: "modified" as const,
+            element: "page-accessibility-tree",
+            attributes: {},
+            oldValue: "previous state",
+            newValue: summary,
+          },
+        ],
+        summary,
       };
     } catch (error) {
       throw new TesterError(
-        `Diff generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'DIFF_FAILED'
+        `Diff generation failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        "DIFF_FAILED"
       );
     }
   }
@@ -250,7 +274,7 @@ Based on these changes, is this condition met? (respond with true/false and expl
     let lastHtml: string | null = null;
 
     if (!this.page) {
-      throw new TesterError('No page provided for waitFor', 'NO_PAGE');
+      throw new TesterError("No page provided for waitFor", "NO_PAGE");
     }
 
     while (Date.now() - startTime < timeout) {
@@ -275,10 +299,10 @@ Based on these changes, is this condition met? (respond with true/false and expl
         }
 
         // Wait before next poll
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
       } catch (error) {
         // Continue polling on non-critical errors
-        if (error instanceof TesterError && error.code === 'ASSERTION_FAILED') {
+        if (error instanceof TesterError && error.code === "ASSERTION_FAILED") {
           throw error;
         }
       }
@@ -286,7 +310,7 @@ Based on these changes, is this condition met? (respond with true/false and expl
 
     throw new TesterError(
       `Timeout waiting for condition: "${condition}" after ${timeout}ms`,
-      'WAIT_TIMEOUT'
+      "WAIT_TIMEOUT"
     );
   }
 
@@ -323,7 +347,10 @@ Based on these changes, is this condition met? (respond with true/false and expl
     const snapshot = this.snapshots.get(snapshotId);
 
     if (!snapshot) {
-      throw new TesterError('Invalid snapshot ID provided', 'INVALID_SNAPSHOT_ID');
+      throw new TesterError(
+        "Invalid snapshot ID provided",
+        "INVALID_SNAPSHOT_ID"
+      );
     }
 
     this.currentSnapshot = snapshot;
