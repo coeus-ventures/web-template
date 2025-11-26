@@ -39,6 +39,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 bun-debug.log*
+logs/
 
 lib/drizzle-gateway/start
 
