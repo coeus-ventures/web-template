@@ -31,6 +31,8 @@ pnpm-lock.yaml
 .DS_Store
 *.pem
 
+.jobs/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
