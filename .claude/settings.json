@@ -9,7 +9,8 @@
       "Glob(**)",
       "NotebookEdit(**)",
       "NotebookRead(**)",
-      "WebFetch(domain:*)"
+      "WebFetch(domain:*)",
+      "mcp__playwright__*"
     ],
     "deny": [],
     "ask": [],
