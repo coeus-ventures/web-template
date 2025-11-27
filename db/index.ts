@@ -1,12 +1,16 @@
-import { config } from "dotenv";
+import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 import { createClient } from "@libsql/client";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
-// When NODE_ENV=test, load .env.test, otherwise load .env
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
-config({ path: envFile, quiet: true });
+// Load environment variables based on NODE_ENV
+dotenv.config({ path: '.env' });
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({ path: '.env.test', override: true });
+} else if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production', override: true });
+}
 
 // Reuse DB instance to avoid too many connections in dev HMR
 declare global {

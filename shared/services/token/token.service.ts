@@ -1,9 +1,9 @@
-import { AuthToken } from "@/models/auth-token";
+import { AuthToken } from "@/shared/models/auth-token";
 import crypto from "crypto";
 import { db } from "@/db";
 import { authTokens } from "@/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
-import { MagicLink } from "@/models/magic-link";
+import { MagicLink } from "@/shared/models/magic-link";
 
 export interface TokenData {
   email: string;

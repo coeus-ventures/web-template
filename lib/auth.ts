@@ -7,7 +7,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { admin } from "better-auth/plugins";
 import { magicLink } from "better-auth/plugins";
-import { MagicLink } from "@/models/magic-link";
+import { MagicLink } from "@/shared/models/magic-link";
 
 export const auth = betterAuth({
   plugins: [

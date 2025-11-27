@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MagicLink } from "@/models/magic-link";
+import { MagicLink } from "@/shared/models/magic-link";
 import { auth, getUser } from "@/lib/auth";
 import { randomUUID } from "crypto";
-import { TokenService } from "@/services/token/token.service";
+import { TokenService } from "@/shared/services/token/token.service";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);

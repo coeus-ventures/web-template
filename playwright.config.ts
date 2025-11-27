@@ -1,4 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+dotenv.config({ path: '.env' });
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({ path: '.env.test', override: true });
+} else if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production', override: true });
+}
+
+const baseURL = process.env.BASE_URL || 'http://localhost:8080';
 
 export default defineConfig({
   testMatch: '**/*.spec.ts',
@@ -8,7 +19,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:8080',
+    baseURL,
     trace: 'on-first-retry',
   },
 
@@ -32,7 +43,7 @@ export default defineConfig({
 
   webServer: {
     command: 'bun run dev',
-    url: 'http://localhost:8080',
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
 });

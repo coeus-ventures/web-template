@@ -1,4 +1,4 @@
-import { TokenService } from "@/services/token/token.service";
+import { TokenService } from "@/shared/services/token/token.service";
 
 async function testReusableToken() {
   const email = "reuse-test@example.com";
