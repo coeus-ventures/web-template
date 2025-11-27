@@ -5,11 +5,11 @@ import { createClient } from "@libsql/client";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
 // Load environment variables based on NODE_ENV
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env', quiet: true });
 if (process.env.NODE_ENV === 'test') {
-  dotenv.config({ path: '.env.test', override: true });
+  dotenv.config({ path: '.env.test', override: true, quiet: true });
 } else if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.production', override: true });
+  dotenv.config({ path: '.env.production', override: true, quiet: true });
 }
 
 // Reuse DB instance to avoid too many connections in dev HMR
