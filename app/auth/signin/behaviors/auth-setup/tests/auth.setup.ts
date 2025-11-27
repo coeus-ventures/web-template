@@ -14,7 +14,7 @@ setup('authenticate', async ({ page }) => {
   // Wait for successful login with robust error handling
   try {
     await page.waitForURL(HOME_URL, { timeout: 10000 }); // 10 second timeout
-  } catch (error) {
+  } catch {
     // Capture error messages
     const errorElement = await page.locator('[role="alert"]').textContent().catch(() => null);
     console.error('Login failed with error:', errorElement);
