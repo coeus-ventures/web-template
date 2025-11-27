@@ -8,7 +8,6 @@
     "dev:logs": "pm2 logs dev",
     "dev:restart": "pm2 restart dev",
     "dev:stop": "pm2 stop dev && pm2 delete dev",
-    "dev:test": "USE_TEST_DB=true next dev --turbopack -p 3001 > logs/test.log 2>&1 &",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
