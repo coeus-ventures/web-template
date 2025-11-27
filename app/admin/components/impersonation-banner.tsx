@@ -1,8 +1,7 @@
 "use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { Shield, X } from "lucide-react";
 import { useStopImpersonating } from "../users/behaviors/stop-impersonating/use-stop-impersonating";
 import { toast } from "sonner";
 
@@ -10,7 +9,9 @@ interface ImpersonationBannerProps {
   impersonatedUserName: string | null;
 }
 
-export function ImpersonationBanner({ impersonatedUserName }: ImpersonationBannerProps) {
+export function ImpersonationBanner({
+  impersonatedUserName,
+}: ImpersonationBannerProps) {
   const { handleStopImpersonating, isLoading } = useStopImpersonating();
 
   const handleStop = async () => {
@@ -19,27 +20,43 @@ export function ImpersonationBanner({ impersonatedUserName }: ImpersonationBanne
       // Will redirect on success
     } catch (error) {
       toast.error("Failed to stop impersonating", {
-        description: error instanceof Error ? error.message : "An error occurred",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
       });
     }
   };
 
   return (
-    <Alert className="mb-4 border-warning bg-warning/10">
-      <AlertDescription className="flex items-center justify-between">
-        <span className="text-sm flex items-center gap-2">
-          <Shield className="h-4 w-4" />
-          Impersonating <strong>{impersonatedUserName || "a user"}</strong>
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleStop}
-          disabled={isLoading}
-        >
-          {isLoading ? "Stopping..." : "Stop Impersonating"}
-        </Button>
-      </AlertDescription>
-    </Alert>
+    <div className="sticky top-0 z-50 w-full border-b border-amber-200/50 bg-amber-50/80 dark:bg-amber-950/20 dark:border-amber-800/50 backdrop-blur-sm">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-4 py-2.5">
+          <div className="flex items-center gap-2.5 text-sm">
+            <Shield className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="text-amber-900 dark:text-amber-100 font-medium">
+              Impersonating{" "}
+              <span className="font-semibold">
+                {impersonatedUserName || "a user"}
+              </span>
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleStop}
+            disabled={isLoading}
+            className="h-7 px-2.5 text-xs text-amber-900 hover:bg-amber-100/50 dark:text-amber-100 dark:hover:bg-amber-900/30"
+          >
+            {isLoading ? (
+              "Stopping..."
+            ) : (
+              <>
+                <X className="h-3 w-3 mr-1.5" />
+                Stop
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

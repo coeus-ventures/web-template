@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SignUpForm from "./components/signup-form";
 import { HOME_URL } from "@/app.config";
+import { getUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 interface SignUpPageProps {
   searchParams: Promise<{
@@ -11,6 +13,12 @@ interface SignUpPageProps {
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const params = await searchParams;
   const redirectURL = params.redirectTo;
+
+  // Redirect if user is already logged in
+  const { user } = await getUser();
+  if (user) {
+    redirect(redirectURL || HOME_URL);
+  }
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8">
