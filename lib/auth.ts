@@ -81,7 +81,10 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  baseUrl:
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.BETTER_AUTH_URL ||
+    "http://localhost:8080",
 });
 
 export const getUser = cache(async () => {
