@@ -6,7 +6,7 @@ import type { SQLiteTable, SQLiteColumn } from 'drizzle-orm/sqlite-core';
 export type StateObject = Record<string, Record<string, unknown>[]>;
 
 export type PreDBOptions = {
-  /** Delete all rows in targeted tables before inserting. Default: false */
+  /** Delete all rows in targeted tables before inserting. Default: true */
   wipe?: boolean;
   /** Reset auto-increment sequences for targeted tables (best-effort for SQLite). Default: true */
   resetSequences?: boolean;
@@ -35,7 +35,7 @@ export async function PreDB<TSchema extends Record<string, unknown>>(
   opts?: PreDBOptions
 ): Promise<void> {
   const options = {
-    wipe: false,
+    wipe: true,
     resetSequences: true,
     ...opts
   };

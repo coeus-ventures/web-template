@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
@@ -20,7 +20,7 @@ const posts = sqliteTable("posts", {
 
 const schema = { users, posts };
 
-  describe("PreDB + PostDB Integration", () => {
+describe("PreDB + PostDB Integration", () => {
   const client = createClient({ url: ":memory:" });
   const db = drizzle(client, { schema });
 
@@ -41,6 +41,13 @@ const schema = { users, posts };
         FOREIGN KEY(user_id) REFERENCES users(id)
       )
     `);
+  });
+
+  beforeEach(async () => {
+    // Clean up tables before each test
+    await db.run(sql`DELETE FROM posts`);
+    await db.run(sql`DELETE FROM users`);
+    await db.run(sql`DELETE FROM sqlite_sequence WHERE name IN ('users', 'posts')`);
   });
 
   it("works together for deterministic testing workflow", async () => {

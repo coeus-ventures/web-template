@@ -1,8 +1,9 @@
 import "@testing-library/jest-dom/vitest";
 import { config } from "dotenv";
 
-// Load environment variables
-config({ path: '.env', quiet: true });
+// When NODE_ENV=test, load .env.test, otherwise load .env
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+config({ path: envFile });
 
 // Database setup and cleanup for tests
 import { beforeAll } from "vitest";

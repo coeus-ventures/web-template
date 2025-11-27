@@ -1,8 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+
+// Mock server-only before importing the action
+vi.mock("server-only", () => ({}));
+
+// Mock the token service
+vi.mock("@/services/token/token.service", () => ({
+  TokenService: {
+    validateAndConsume: vi.fn(),
+  },
+}));
+
 import { validateToken } from "../actions/validate-token.action";
 import { TokenService } from "@/services/token/token.service";
-
-vi.mock("@/services/token.service");
 
 describe("validateToken action", () => {
   beforeEach(() => {

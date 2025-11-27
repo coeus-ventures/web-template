@@ -6,7 +6,7 @@ A production-ready [Next.js](https://nextjs.org) application template with authe
 
 ✨ **Next.js 16** - Latest React framework with App Router
 🔐 **Authentication** - Better-auth with session management
-🗄️ **Database Ready** - Drizzle ORM + SQLite/Turso with migrations and gateway
+🗄️ **Database Ready** - Drizzle ORM + SQLite/Turso with migrations
 🧪 **Testing Suite** - Vitest (unit) + Playwright (E2E) + b-test (database testing)
 🤖 **AI Integration** - Vercel AI SDK with LLM-powered test assertions
 ⚡ **Bun** - Fast package manager and runtime
@@ -28,7 +28,6 @@ A production-ready [Next.js](https://nextjs.org) application template with authe
 - **Drizzle ORM 0.44** - Type-safe SQL ORM with migrations
 - **LibSQL/SQLite** - Embedded database for development/testing
 - **Turso** - Serverless database for production (optional)
-- **Drizzle Gateway** - Database access gateway with token authentication
 - **Better Auth 1.3** - Modern authentication library with session management
 
 ### Testing
@@ -87,7 +86,7 @@ bun run db:seed
 # Start development server (default port 8080 with Turbopack)
 bun run dev
 
-# Or start with PM2 (dev server + drizzle gateway)
+# Or start with PM2 (managed process)
 bun run dev:start
 
 # View logs
@@ -253,12 +252,10 @@ See `lib/b-test/README.md` for full documentation.
 │   │   ├── postdb.ts        # Assert database state
 │   │   ├── tester.ts        # LLM-powered browser testing
 │   │   └── tests/           # b-test test suite
-│   ├── drizzle-gateway/     # Database gateway
 │   ├── auth.ts              # Better-auth configuration
 │   ├── auth-client.ts       # Auth client utilities
 │   └── utils.ts             # Utility functions
 ├── scripts/
-│   ├── drizzle-gateway/     # Gateway scripts
 │   ├── generate-token.ts    # Token generation
 │   └── check-token.ts       # Token validation
 ├── tests/
@@ -292,16 +289,13 @@ BETTER_AUTH_URL="http://localhost:8080"
 
 # OpenAI (for LLM-powered test assertions)
 OPENAI_API_KEY="your-openai-api-key"
-
-# Drizzle Gateway (optional)
-DRIZZLE_GATEWAY_TOKEN="your-gateway-token"
 ```
 
 ## Scripts Reference
 
 ### Development
 - `bun run dev` - Start development server (port 8080 with Turbopack)
-- `bun run dev:start` - Start with PM2 (dev + drizzle gateway)
+- `bun run dev:start` - Start with PM2 (managed process)
 - `bun run dev:logs` - View PM2 logs
 - `bun run dev:restart` - Restart PM2 dev server
 - `bun run dev:test` - Start test environment server (port 3001)
@@ -315,10 +309,6 @@ DRIZZLE_GATEWAY_TOKEN="your-gateway-token"
 - `bun run db:seed` - Seed database
 - `bun run db:clean` - Clear database
 - `bun run db:reset` - Reset database
-
-### Gateway
-- `bun run drizzle:gateway` - Start Drizzle Gateway
-- `bun run drizzle:gateway:dev` - Start gateway with auto-reload
 
 ### Testing
 - `bun run test` - Run unit tests (Vitest)
@@ -381,7 +371,7 @@ Components are installed in `components/ui/` and fully customizable.
 For production-like development with PM2:
 
 ```bash
-# Start both dev server and drizzle gateway
+# Start dev server
 bun run dev:start
 
 # Monitor logs
@@ -391,7 +381,7 @@ bun run dev:logs
 bun run dev:restart
 
 # Stop all
-pm2 stop all
+bun run dev:stop
 ```
 
 ### Package Management

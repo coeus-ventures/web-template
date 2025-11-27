@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 8080 --turbopack",
-    "dev:start": "pm2 start \"bun run dev\" --log ./logs/dev.log --name dev && pm2 start \"bun run drizzle:gateway\" --log ./logs/gateway.log --name gateway",
+    "dev:start": "pm2 start \"bun run dev\" --log ./logs/dev.log --name dev",
     "dev:logs": "pm2 logs dev",
     "dev:restart": "pm2 restart dev",
+    "dev:stop": "pm2 stop dev && pm2 delete dev",
     "dev:test": "USE_TEST_DB=true next dev --turbopack -p 3001 > logs/test.log 2>&1 &",
     "build": "next build",
     "start": "next start",
@@ -21,8 +22,6 @@
     "db:clean": "bun db/scripts/clean.ts",
     "db:squash": "bun db/scripts/squash.ts",
     "db:reset": "bun db/scripts/clean.ts && bun run db:push",
-    "drizzle:gateway": "bun run scripts/drizzle-gateway/gateway-starter.ts",
-    "drizzle:gateway:dev": "bun --watch scripts/drizzle-gateway/gateway-starter.ts",
     "shadcn:add": "npx shadcn@latest add"
   },
   "dependencies": {

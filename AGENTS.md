@@ -56,7 +56,7 @@ bun run db:squash        # Combine migrations
 ```bash
 # Development servers
 bun run dev              # Port 8080 with Turbopack
-bun run dev:start        # PM2: dev server + drizzle gateway
+bun run dev:start        # PM2: dev server
 bun run dev:logs         # View PM2 logs
 bun run dev:restart      # Restart PM2 dev server
 bun run lint             # ESLint
@@ -360,9 +360,6 @@ BETTER_AUTH_URL="http://localhost:8080"
 
 # OpenAI (for LLM-powered test assertions)
 OPENAI_API_KEY="your-openai-api-key"
-
-# Optional
-DRIZZLE_GATEWAY_TOKEN="your-gateway-token"
 ```
 
 ## Important Documentation
