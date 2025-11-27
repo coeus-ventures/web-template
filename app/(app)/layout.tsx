@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth";
 import { signOut as signOutAction } from "@/app/auth/behaviors/signout/actions/signout";
 import { redirect } from "next/navigation";
 import { SIGNIN_URL } from "@/app.config";
+import { ImpersonationBanner } from "@/app/admin/components/impersonation-banner";
 
 async function handleSignOut() {
   "use server";
@@ -15,7 +16,7 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = await getUser();
+  const { user, isImpersonating } = await getUser();
 
   if (!user) redirect(SIGNIN_URL);
 
@@ -39,7 +40,12 @@ export default async function AppLayout({
         </div>
       </header>
 
-      {children}
+      {isImpersonating && (
+        <ImpersonationBanner impersonatedUserName={user.name || user.email} />
+      )}
+      <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
+        {children}
+      </div>
     </div>
   );
 }

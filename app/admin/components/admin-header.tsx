@@ -1,26 +1,49 @@
-import Link from "next/link";
+"use client";
+
+import { AdminNav } from "./admin-nav";
+import { AdminBreadcrumbs } from "./admin-breadcrumbs";
+import { Separator } from "@/components/ui/separator";
 
 interface AdminHeaderProps {
-  userEmail: string;
+  title?: string;
+  description?: string;
+  action?: React.ReactNode;
 }
 
-export function AdminHeader({ userEmail }: AdminHeaderProps) {
+export function AdminHeader({ title, description, action }: AdminHeaderProps) {
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">← Back to App</span>
-          </Link>
+    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="px-4 md:px-6 py-4">
+        {/* Navigation */}
+        <div className="flex items-center justify-between mb-4">
+          <AdminNav />
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <p className="text-sm text-muted-foreground">
-              Logged in as <span className="font-medium">{userEmail}</span>
-            </p>
-          </div>
-        </div>
+
+        {/* Breadcrumbs */}
+        <AdminBreadcrumbs />
+
+        {/* Page header */}
+        {(title || description || action) && (
+          <>
+            <Separator className="my-4" />
+            <div className="flex items-start justify-between">
+              <div>
+                {title && (
+                  <h1 className="text-2xl font-semibold tracking-tight">
+                    {title}
+                  </h1>
+                )}
+                {description && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {description}
+                  </p>
+                )}
+              </div>
+              {action && <div className="ml-4">{action}</div>}
+            </div>
+          </>
+        )}
       </div>
-    </header>
+    </div>
   );
 }

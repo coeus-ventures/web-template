@@ -81,17 +81,35 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  baseUrl:
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.BETTER_AUTH_URL ||
+    "http://localhost:8080",
 });
 
 export const getUser = cache(async () => {
-  const session = await auth.api.getSession({
+  const sessionResponse = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session || !session.user) {
-    return { user: null };
+  if (!sessionResponse || !sessionResponse.user) {
+    return { user: null, isImpersonating: false, impersonatedBy: null };
   }
 
-  return { user: session.user, sessionToken: session.session.token };
+  // Better Auth getSession returns: { user, session: { id, token, expiresAt, impersonatedBy, ... } }
+  // impersonatedBy is stored in session.impersonatedBy
+  const sessionData = sessionResponse.session as {
+    impersonatedBy?: string | null;
+  } & typeof sessionResponse.session;
+
+  // Check impersonatedBy directly from session
+  const impersonatedBy = sessionData?.impersonatedBy || null;
+  const isImpersonating = !!impersonatedBy;
+
+  return {
+    user: sessionResponse.user,
+    sessionToken: sessionResponse.session.token,
+    isImpersonating,
+    impersonatedBy,
+  };
 });

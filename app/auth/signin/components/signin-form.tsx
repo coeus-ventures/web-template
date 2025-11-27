@@ -1,8 +1,6 @@
 "use client";
 
 import { useSignIn } from "../behaviors/signin/use-signin";
-import { signOutAction } from "./signout-action";
-import { useTransition } from "react";
 
 const LockIcon = () => (
   <svg
@@ -37,14 +35,6 @@ const UserIcon = () => (
 
 export default function SignInForm({ redirectURL }: { redirectURL: string }) {
   const { state, formAction, isLoading } = useSignIn(redirectURL);
-  const [isPending, startTransition] = useTransition();
-  const isAlreadyLoggedInError = state.error?.includes("already logged in");
-
-  const handleSignOut = () => {
-    startTransition(async () => {
-      await signOutAction();
-    });
-  };
 
   return (
     <form action={formAction} className="space-y-6">
@@ -58,16 +48,6 @@ export default function SignInForm({ redirectURL }: { redirectURL: string }) {
           </span>
           <div className="block sm:inline ml-2 mt-3 text-sm">
             <span>{state.error}</span>
-            {isAlreadyLoggedInError && (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                disabled={isPending}
-                className="ml-2 underline font-semibold hover:text-red-900 disabled:opacity-50 cursor-pointer"
-              >
-                {isPending ? "Signing out..." : "Sign out"}
-              </button>
-            )}
           </div>
         </div>
       )}
