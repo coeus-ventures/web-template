@@ -2,7 +2,6 @@
 
 Brief overview of what this issue accomplishes.
 
-
 # Functional Specification
 
 ## Behavior: [Name]

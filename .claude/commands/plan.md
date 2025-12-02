@@ -7,7 +7,7 @@ argument-hint: @docs/issues/[issue-file].md
 
 Instructions: $ARGUMENTS
 
-- Update the issue file in the instructions by following the @docs/templates/behavior-issue.md format if this is a behavior related issue or the @docs/templates/page-issue.md 
+- Update the issue file in the instructions by following the @docs/templates/issue.md format if this is a behavior related issue or the @docs/templates/issue.md 
 
 - Issues tend to follow this naming convention:
   - Implement [name of the behavior] in [name of the page]
