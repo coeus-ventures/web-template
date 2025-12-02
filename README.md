@@ -227,12 +227,20 @@ See `lib/b-test/README.md` for full documentation.
 ```
 .
 ├── app/                      # Next.js App Router
+│   ├── (landing-page)/      # Public pages (no auth required)
+│   ├── (app)/               # Authenticated app pages
+│   │   └── home/            # Home page
 │   ├── admin/               # Admin pages
+│   │   ├── behaviors/       # Admin behaviors
+│   │   ├── components/      # Admin components
+│   │   └── users/           # User management
 │   ├── auth/                # Authentication pages
-│   ├── home/                # Home pages
+│   │   ├── signin/          # Sign in page
+│   │   ├── signup/          # Sign up page
+│   │   └── token/           # Token login
 │   ├── api/                 # API routes
 │   ├── layout.tsx           # Root layout
-│   └── page.tsx             # Homepage
+│   └── page.tsx             # Landing page
 ├── shared/                   # Code shared between behaviors
 │   ├── actions/             # Shared server actions
 │   ├── models/              # Shared data models
@@ -242,31 +250,26 @@ See `lib/b-test/README.md` for full documentation.
 ├── db/
 │   ├── databases/           # SQLite files (gitignored)
 │   ├── migrations/          # Migration SQL files
-│   │   └── meta/            # Migration metadata
 │   ├── scripts/             # Database utilities
-│   │   ├── clean.ts         # Clear database
-│   │   └── seed.ts          # Seed data
+│   ├── seed/                # Seed data files
 │   ├── schema.ts            # Database schema
 │   └── index.ts             # Database client
+├── docs/
+│   ├── drafts/              # Work in progress docs
+│   ├── issues/              # Project issues
+│   ├── lessons/             # Lessons learned
+│   ├── references/          # Reference documentation
+│   └── templates/           # Doc templates
 ├── lib/
 │   ├── b-test/              # Database testing library
-│   │   ├── predb.ts         # Setup database state
-│   │   ├── postdb.ts        # Assert database state
-│   │   ├── tester.ts        # LLM-powered browser testing
-│   │   └── tests/           # b-test test suite
 │   ├── auth.ts              # Better-auth configuration
 │   ├── auth-client.ts       # Auth client utilities
 │   └── utils.ts             # Utility functions
-├── scripts/
-│   ├── generate-token.ts    # Token generation
-│   └── check-token.ts       # Token validation
-├── tests/
-│   ├── *.spec.ts            # Playwright E2E tests
-│   └── *.test.ts            # Vitest unit tests
-├── public/                  # Static assets
-├── drizzle.config.ts        # Drizzle ORM configuration
-├── vitest.config.ts         # Vitest configuration
-└── playwright.config.ts     # Playwright configuration
+├── scripts/                  # Utility scripts
+├── public/                   # Static assets
+├── drizzle.config.ts         # Drizzle ORM configuration
+├── vitest.config.ts          # Vitest configuration
+└── playwright.config.ts      # Playwright configuration
 ```
 
 ## Environment Variables
