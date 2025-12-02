@@ -1,6 +1,6 @@
 # behave.js Architecture
 
-> A simplified, uni-directional layering model that keeps React UI, client-side state, and server logic cleanly separated.
+> A uni-directional layering model that keeps React UI, client-side state, server logic, and external integrations cleanly separated.
 
 ## Tech Stack
 
@@ -14,24 +14,44 @@
 - **Validation**: Zod
 - **State Management**: Jotai
 
-## 1 Two-Layer Architecture
+## 1 Three-Layer Architecture
 
 ```
-Frontend  →  Backend
-(client)    (server)
++-------------------------------------+
+|          FRONTEND LAYER             |
+|   Components -> Hooks -> States     |
+|          (Browser)                  |
++-------------------------------------+
+              |
+              v
++-------------------------------------+
+|         BACKEND LAYER               |
+|   Actions + Routes + Workflows      |
+|          (Server)                   |
++-------------------------------------+
+              |
+              v
++-------------------------------------+
+|      INFRASTRUCTURE LAYER           |
+|      Models  +  Services            |
+|          (Server)                   |
++-------------------------------------+
 ```
+
+**Critical Rule**: Data flows top to bottom only. No layer may import from layers above it.
 
 | Layer              | Runs on | Core responsibilities                                                      | May import                     | **Must _not_** import / do                 |
 | ------------------ | ------- | -------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------ |
-| **Frontend**       | Browser | **Components**: Render UI, collect user input, consume custom hooks<br/>**Hooks**: Validate input (Zod), manage state, optimistic updates, call Actions | React, Zod, Jotai, Actions     | Database clients, Drizzle, server-only code |
-| **Backend**        | Server  | **Actions**: Auth-aware business logic, Drizzle queries, external API calls<br/>**Routes**: API endpoints and server-side routing<br/>**Services**: External integrations, complex business logic | Drizzle / SQL client, Services, external APIs, auth/context utilities | React, `window`, Jotai atoms               |
+| **Frontend**       | Browser | **Components**: Render UI, collect user input, consume custom hooks<br/>**Hooks**: Validate input (Zod), manage state, optimistic updates, call Actions<br/>**States**: Jotai atoms for client state | React, Zod, Jotai, Actions     | Database clients, Drizzle, Models, Services, server-only code |
+| **Backend**        | Server  | **Actions**: Auth-aware business logic, orchestrate Models and Services<br/>**Routes**: API endpoints and server-side routing<br/>**Workflows**: Long-running background jobs/processes | Models, Services, auth/context utilities | React, `window`, Jotai atoms, direct DB queries |
+| **Infrastructure** | Server  | **Models**: Active Record-style database access (Drizzle ORM)<br/>**Services**: External API integrations (email, payments, notifications) | Drizzle/SQL client, External APIs, SDKs | React, Jotai, Actions, Hooks |
 
 **One-way flow**
-Data always moves left → right.
 
+- **Infrastructure** never calls **Backend** or **Frontend** (Models/Services don't call Actions/Hooks/Components).
 - **Backend** never calls **Frontend** (Actions/Routes don't call Hooks/Components).
 - **Frontend** Components never contain server code or manage atoms directly.
-- **Frontend** Hooks never touch the database directly.
+- **Frontend** Hooks never touch the database or Models directly.
 
 ---
 
@@ -39,49 +59,120 @@ Data always moves left → right.
 
 ```
 app/
-  ▸ tasks/                       ← page "/tasks"
-      page.tsx                   ← entry React component
-      state.ts                   ← Jotai atoms for this page
+  ▸ tasks/                        ← page "/tasks"
+      page.tsx                    ← entry React component
+      state.ts                    ← Jotai atoms for this page
       components/
         TaskForm.tsx
         TaskList.tsx
       behaviors/
         create-task/
-          create-task.action.ts
-          use-create-task.ts
+          actions/
+            create-task.action.ts
+          hooks/
+            use-create-task.ts
           tests/
-            create-task.action.test.ts
-            use-create-task.test.ts
+            create-task.spec.ts          ← E2E test (Playwright)
+            create-task.action.test.ts   ← Action unit test
+            use-create-task.test.tsx     ← Hook test
+          create-task.md                 ← Behavior specification (optional)
         delete-task/
-          delete-task.action.ts
-          use-delete-task.ts
+          actions/
+            delete-task.action.ts
+          hooks/
+            use-delete-task.ts
           tests/
             delete-task.action.test.ts
-            use-delete-task.test.ts
-        toggle-task/
-          toggle-task.action.ts
-          use-toggle-task.ts
-          tests/
-            toggle-task.action.test.ts
-            use-toggle-task.test.ts
-        fetch-tasks/
-          fetch-tasks.action.ts
-          tests/
-            fetch-tasks.action.test.ts
-services/
-  email.ts                        ← Backend: External services
-  notifications.ts
-lib/
-  db.ts                           ← Drizzle client
+            use-delete-task.test.tsx
+shared/                           ← Shared code across features (Infrastructure)
+  models/                         ← Active Record-style models
+    user.ts
+    auth-token.ts
+  services/                       ← External integrations
+    email/
+      email.service.ts
+      tests/
+        email.service.test.ts
+    payments/
+      stripe.service.ts
+  actions/                        ← Shared server actions (rare)
+  hooks/                          ← Shared client hooks (rare)
+  states/                         ← Global Jotai atoms
+db/
   schema.ts                       ← Drizzle schema definitions
+  index.ts                        ← Database client
+  migrations/                     ← SQL migrations
+lib/                              ← Utility functions
+components/                       ← Shared React components
+  ui/                             ← shadcn/ui components
 ```
 
 - Page folders are **singular** to match route segments.
 - **State** is defined in a `state.ts` file (sibling to `page.tsx`) containing Jotai atoms for that page.
-- **Behaviors** are organized in `behaviors/` folder (sibling to `components/`) with one folder per behavior containing related actions and hooks.
-- **Hook** files **start with** `use…` and export a matching custom hook function that encapsulates validation, state management, and action calls. Each hook has a single handler function (prefixed with `handle`) as the main entry point for that behavior. Additional event-related functions in the hook should use the `on` prefix (e.g., `onReset`, `onValidate`).
-- **Action** files **end with** `.action.ts` and must start with `'use server'` directive to mark them as server actions.
-- Tests sit next to the code they verify.
+- **Behaviors** are organized in `behaviors/` folder with subdirectories for `actions/`, `hooks/`, and `tests/`.
+- **Hook** files **start with** `use-` and export a handler function (prefixed with `handle`) as the main entry point.
+- **Action** files **end with** `.action.ts` and must start with `'use server'` directive.
+- **Shared folder** contains Infrastructure layer code (Models, Services) reused across features.
+- Tests sit next to the code they verify in a `tests/` subdirectory.
+
+### Behavior Directory Structure
+
+Each behavior is a self-contained feature unit:
+
+```
+behaviors/[behavior-name]/
+  actions/                        ← Server actions
+    [behavior-name].action.ts
+  hooks/                          ← Client hooks
+    use-[behavior-name].ts
+  workflows/                      ← Background jobs (optional)
+    [workflow-name]/
+      [workflow-name].workflow.ts
+      steps.ts
+  tests/                          ← All tests for this behavior
+    [behavior-name].spec.ts       ← E2E tests (Playwright)
+    [behavior-name].action.test.ts ← Action unit tests
+    use-[behavior-name].test.tsx  ← Hook tests
+  [behavior-name].md              ← Behavior specification (optional)
+```
+
+### Workflows
+
+Workflows are long-running background processes that execute outside the request/response cycle. They:
+- Run asynchronously in the background
+- Support retries, timeouts, and step-based execution
+- Can run for extended periods (minutes to hours)
+- Are triggered by Actions or Routes
+
+**Workflow structure:**
+```
+workflows/[workflow-name]/
+  [workflow-name].workflow.ts     ← Workflow definition
+  steps.ts                        ← Step implementations
+```
+
+### Shared Folder (Infrastructure Layer)
+
+The `shared/` folder contains the Infrastructure layer - code reused across multiple features:
+
+- **`shared/models/`** - Active Record-style models that wrap database tables with class methods (`find`, `where`, `save`, `update`). Models encapsulate all database access.
+
+- **`shared/services/`** - External API integrations (email, payments, notifications). Services wrap third-party SDKs with consistent interfaces.
+
+- **`shared/workflows/`** - Background workflows used by multiple behaviors.
+
+- **`shared/actions/`** - Server actions used by 2+ behaviors. Prefer behavior-specific actions when possible.
+
+- **`shared/hooks/`** - Client hooks used by 2+ pages. Prefer behavior-specific hooks when possible.
+
+- **`shared/states/`** - Global Jotai atoms for application-wide state.
+
+**When to use shared vs behavior-specific:**
+- Use `shared/` when code is needed by 2+ behaviors/pages
+- Use `behaviors/` for feature-specific actions, hooks, and workflows
+- Models and Services are always in `shared/` (Infrastructure layer)
+- Actions, hooks, and workflows are typically behavior-specific
+
 ---
 
 ## 3 End-to-End Example — “Create Task”
@@ -350,9 +441,12 @@ flowchart LR
 | - Components       | React Testing Library  | Mock custom hooks; assert rendered output & DOM events |
 | - Hooks            | React Testing Library + renderHook | Provide in-memory Jotai store; mock Actions         |
 | **Backend**        |                        |                                                     |
-| - Actions          | Vitest + test database | Use SQLite in-memory; real Drizzle queries/Services, mocked externals |
-| - Routes           | Vitest + supertest     | Integration tests with mocked services              |
-| - Services         | Vitest + mocked APIs   | Mock external dependencies; test business logic     |
+| - Actions          | Vitest + test database | Use SQLite in-memory; real Drizzle queries, mock Infrastructure services |
+| - Routes           | Vitest + supertest     | Integration tests with mocked Infrastructure services |
+| - Models           | Vitest + test database | Use SQLite in-memory; test data access methods      |
+| - Shared Services  | Vitest + test database | Use SQLite in-memory; test business logic           |
+| **Infrastructure** |                        |                                                     |
+| - Services         | Vitest + mocked APIs   | Mock external API calls; test retry/error handling  |
 
 No cross-layer stubs: each test concerns one layer only.
 

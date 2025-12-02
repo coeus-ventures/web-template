@@ -95,8 +95,6 @@ bun run dev:logs
 # Restart dev server
 bun run dev:restart
 
-# Start test environment server (port 3001)
-bun run dev:test
 ```
 
 Open [http://localhost:8080](http://localhost:8080) to view the application.
@@ -235,6 +233,10 @@ See `lib/b-test/README.md` for full documentation.
 │   ├── api/                 # API routes
 │   ├── layout.tsx           # Root layout
 │   └── page.tsx             # Homepage
+├── shared/                   # Code shared between behaviors
+│   ├── actions/             # Shared server actions
+│   ├── models/              # Shared data models
+│   └── services/            # Shared external service integrations
 ├── components/
 │   └── ui/                  # shadcn/ui components
 ├── db/
@@ -298,7 +300,6 @@ OPENAI_API_KEY="your-openai-api-key"
 - `bun run dev:start` - Start with PM2 (managed process)
 - `bun run dev:logs` - View PM2 logs
 - `bun run dev:restart` - Restart PM2 dev server
-- `bun run dev:test` - Start test environment server (port 3001)
 - `bun run lint` - Run ESLint
 
 ### Database
