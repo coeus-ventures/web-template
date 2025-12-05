@@ -1,4 +1,4 @@
-import { TokenService } from "@/shared/services/token/token.service";
+import { TokenService } from "@/shared/integrations/token/token.service";
 // Removed model dependency
 
 async function testTokenValidation() {

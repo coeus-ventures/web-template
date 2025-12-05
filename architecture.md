@@ -196,12 +196,12 @@ shared/workflows/
 - Can run for extended periods (up to 60 minutes)
 - Stream real-time updates via channels
 
-### shared/services/
+### shared/integrations/
 
 External integrations and infrastructure services:
 
 ```
-shared/services/
+shared/integrations/
 +-- github/                       # GitHub App OAuth and API
 |   +-- github-app.service.ts
 +-- inngest/                      # Inngest client configuration
@@ -307,7 +307,7 @@ export async function createProjectAction(description: string) {
 
 **Workflow Pattern**:
 ```typescript
-import { getInngestApp } from '@/shared/services/inngest/inngest.client';
+import { getInngestApp } from '@/shared/integrations/inngest/inngest.client';
 
 const inngest = getInngestApp();
 
@@ -336,12 +336,12 @@ export const sandboxCreation = inngest.createFunction(
 
 ### Infrastructure Layer
 
-**Location**: `/shared/models`, `/shared/services`
+**Location**: `/shared/models`, `/shared/integrations`
 **Technologies**: Drizzle ORM, external SDKs
 
 **Rules**:
 - Models use Active Record pattern for database operations
-- Services wrap external integrations
+- Integrations wrap external services
 - No imports from Frontend or Backend layers
 - Reusable across entire application
 
@@ -472,21 +472,21 @@ Creating a project flows through the architecture:
 
 | Service | Purpose | Location |
 |---------|---------|----------|
-| **Inngest** | Background workflows | `shared/services/inngest/` |
-| **GitHub** | Repository integration | `shared/services/github/` |
-| **MorphCloud** | SSH sandboxes | `shared/services/morph/` |
-| **Vercel** | Deployments | `shared/services/vercel/` |
-| **Stripe** | Payments | `shared/services/stripe/` |
-| **Turso** | Production database | `shared/services/turso/` |
-| **Pusher** | Real-time updates | `shared/services/pusher/` |
-| **OpenAI** | Codex AI agent | `shared/services/providers/` |
-| **Anthropic** | Claude AI agent | `shared/services/providers/` |
+| **Inngest** | Background workflows | `shared/integrations/inngest/` |
+| **GitHub** | Repository integration | `shared/integrations/github/` |
+| **MorphCloud** | SSH sandboxes | `shared/integrations/morph/` |
+| **Vercel** | Deployments | `shared/integrations/vercel/` |
+| **Stripe** | Payments | `shared/integrations/stripe/` |
+| **Turso** | Production database | `shared/integrations/turso/` |
+| **Pusher** | Real-time updates | `shared/integrations/pusher/` |
+| **OpenAI** | Codex AI agent | `shared/integrations/providers/` |
+| **Anthropic** | Claude AI agent | `shared/integrations/providers/` |
 
 ## When to Use Shared vs Behavior-Specific
 
 **Use shared/ when**:
 - Code is used by 3+ behaviors
-- It's a core service integration (GitHub, Stripe, etc.)
+- It's a core integration (GitHub, Stripe, etc.)
 - It's a utility hook used across pages
 - It's a workflow that multiple features trigger
 

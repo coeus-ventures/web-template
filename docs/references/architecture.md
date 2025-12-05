@@ -157,7 +157,7 @@ The `shared/` folder contains the Infrastructure layer - code reused across mult
 
 - **`shared/models/`** - Active Record-style models that wrap database tables with class methods (`find`, `where`, `save`, `update`). Models encapsulate all database access.
 
-- **`shared/services/`** - External API integrations (email, payments, notifications). Services wrap third-party SDKs with consistent interfaces.
+- **`shared/integrations/`** - External API integrations (email, payments, notifications). Integrations wrap third-party SDKs with consistent interfaces.
 
 - **`shared/workflows/`** - Background workflows used by multiple behaviors.
 

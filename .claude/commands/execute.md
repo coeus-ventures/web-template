@@ -13,7 +13,7 @@ This build process leverages specialized agents for each layer of the architectu
 
 | Agent | Purpose | Layer |
 |-------|---------|-------|
-| **service-writer** | Implements external integrations and complex business logic | Backend |
+| **integration-writer** | Implements external integrations and complex business logic | Backend |
 | **action-writer** | Creates server actions with auth, validation, and direct Drizzle queries | Backend |
 | **hook-writer** | Implements client hooks with state management and optimistic updates | Frontend |
 | **component-writer** | Creates UI components that consume hooks | Frontend |
@@ -38,9 +38,9 @@ Here is the order of steps to execute the issue:
 Details for each step are provided below.
 
 
-## 1. Create or Update Services (if necessary)
+## 1. Create or Update Integrations (if necessary)
 
-**Location:** `/services/[service-name].ts`
+**Location:** `/shared/integrations/[integration-name]/`
 
 ### When to Create/Update:
 - External API integrations needed
@@ -49,15 +49,15 @@ Details for each step are provided below.
 - Heavy computations or background tasks
 
 ### Agent Instructions:
-**Use the service-writer agent**
+**Use the integration-writer agent**
 
 **Required Information:**
-- Service purpose (email, payment, analytics, etc.)
+- Integration purpose (email, payment, analytics, etc.)
 - External APIs or libraries to integrate
 - Complex business logic requirements
 - Environment variables needed
 
-The service-writer agent will handle all implementation details following the project's Backend layer patterns.
+The integration-writer agent will handle all implementation details following the project's Backend layer patterns.
 
 ## 2. Create or Update State (Jotai Atoms)
 

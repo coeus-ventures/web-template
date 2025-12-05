@@ -4,14 +4,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 // Mock the token service
-vi.mock("@/services/token/token.service", () => ({
+vi.mock("@/shared/integrations/token/token.service", () => ({
   TokenService: {
     validateAndConsume: vi.fn(),
   },
 }));
 
 import { validateToken } from "../actions/validate-token.action";
-import { TokenService } from "@/shared/services/token/token.service";
+import { TokenService } from "@/shared/integrations/token/token.service";
 
 describe("validateToken action", () => {
   beforeEach(() => {

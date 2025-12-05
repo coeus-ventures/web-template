@@ -19,8 +19,8 @@ Frontend (Browser) → Backend (Server)
 ### Backend Layer
 - **Actions**: Auth-aware business logic, direct Drizzle queries, external API calls
 - **Routes**: API endpoints and server-side routing
-- **Services**: External integrations, complex business logic
-- **May import**: Drizzle/SQL client, Services, external APIs, auth/context utilities
+- **Integrations**: External service integrations, complex business logic
+- **May import**: Drizzle/SQL client, Integrations, external APIs, auth/context utilities
 - **Must NOT import**: React, `window`, Jotai atoms
 
 ### One-Way Data Flow
@@ -155,8 +155,9 @@ lib/                   # Shared libraries
   /b-test/            # Testing utilities
   auth.ts             # Auth config
   auth-client.ts      # Auth client
-models/                # Data models
-services/              # Business logic services
+shared/                # Shared code across features
+  /models/             # Data models
+  /integrations/       # External service integrations
 components/            # Shared components
   /ui/                # shadcn/ui components
 docs/                  # Documentation
@@ -303,9 +304,9 @@ export function useCreateTask() {
 - Main handler: `handle[Name]` (e.g., `handleCreateTask`, `handleDeleteTask`)
 - Event functions: `on[Event]` (e.g., `onReset`, `onCancel`, `onValidate`)
 
-### Services (Backend)
+### Integrations (Backend)
 
-Services are objects with static methods (not classes):
+Integrations are objects with static methods (not classes):
 
 ```typescript
 export const TokenService = {
@@ -376,7 +377,7 @@ OPENAI_API_KEY="your-openai-api-key"
 - `test-writer.md` - Generates behavior, action, and hook tests
 - `action-writer.md` - Creates server actions
 - `component-writer.md` - Builds React components
-- `service-writer.md` - Implements services
+- `integration-writer.md` - Implements integrations
 - `model-writer.md` - Creates data models
 - `route-writer.md` - Builds API routes
 - `hook-writer.md` - Creates React hooks

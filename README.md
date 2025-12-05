@@ -244,7 +244,7 @@ See `lib/b-test/README.md` for full documentation.
 ├── shared/                   # Code shared between behaviors
 │   ├── actions/             # Shared server actions
 │   ├── models/              # Shared data models
-│   └── services/            # Shared external service integrations
+│   └── integrations/        # Shared external service integrations
 ├── components/
 │   └── ui/                  # shadcn/ui components
 ├── db/

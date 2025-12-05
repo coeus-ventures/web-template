@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import { TokenService } from "@/shared/services/token/token.service";
+import { TokenService } from "@/shared/integrations/token/token.service";
 
 interface ValidateTokenResult {
   success: boolean;

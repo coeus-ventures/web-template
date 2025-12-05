@@ -90,8 +90,8 @@ export const Problem = {
 };
 ```
 
-### 6. Services (/services/*.ts)
-- External integrations and complex business logic
+### 6. Integrations (/shared/integrations/*.ts)
+- External service integrations and complex business logic
 - Called by Actions, never by Frontend
 - Handle emails, notifications, third-party APIs
 
