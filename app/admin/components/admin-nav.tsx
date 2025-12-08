@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "../behaviors/signout/actions/signout.action";
 
@@ -17,6 +17,11 @@ const navItems = [
     title: "Users",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Database",
+    href: "/admin/database",
+    icon: Database,
   },
 ];
 
