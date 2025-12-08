@@ -4,7 +4,11 @@ A spreadsheet-like interface for viewing and managing data in a specific databas
 
 **Depends on:** WEB-16 (schema introspection utility)
 
+
+
 # Functional Specification
+
+
 
 ## Behavior: View Table Data
 Directory: `app/admin/database/[tableName]/behaviors/view-table/`
@@ -205,7 +209,10 @@ id, email, name
 
 # Technical Specification
 
+
+
 ## Action: fetch-table-data
+
 File: `app/admin/database/[tableName]/behaviors/view-table/fetch-table-data.action.ts`
 Input: `{ tableName: string, page?: number, limit?: number, sort?: { column: string, direction: 'asc' | 'desc' }, filter?: string }`
 Returns: `Promise<{ rows: Record<string, unknown>[], total: number, page: number, totalPages: number }>`
