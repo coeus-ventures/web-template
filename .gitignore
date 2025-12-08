@@ -59,3 +59,6 @@ next-env.d.ts
 /db/databases/*.db
 /db/databases/*.db-shm
 /db/databases/*.db-wal
+
+# Epic CLI worktrees
+.worktrees
