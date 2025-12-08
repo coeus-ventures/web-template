@@ -1,8 +1,14 @@
 # WEB-18 Babel Function Debug Transform
 
+
+
 Add a custom Babel plugin that automatically injects `console.debug()` statements at the beginning of every function. This enables function-level tracing for debugging purposes during development.
 
+
+
 # Functional Specification
+
+
 
 ## Behavior: Function Debug Logging
 

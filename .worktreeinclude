@@ -1,0 +1,8 @@
+# Files to copy when creating a new worktree
+# These are gitignored but useful for development
+
+# Environment files
+.env
+
+# Development database (optional - uncomment if you want to copy existing data)
+# db/databases/development.db
