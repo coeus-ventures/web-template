@@ -6,7 +6,9 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
 // Load environment variables based on NODE_ENV
 dotenv.config({ path: '.env', quiet: true });
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'development') {
+  dotenv.config({ path: '.env.development', override: true, quiet: true });
+} else if (process.env.NODE_ENV === 'test') {
   dotenv.config({ path: '.env.test', override: true, quiet: true });
 } else if (process.env.NODE_ENV === 'production') {
   dotenv.config({ path: '.env.production', override: true, quiet: true });
