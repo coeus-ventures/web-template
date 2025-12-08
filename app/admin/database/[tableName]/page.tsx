@@ -3,17 +3,13 @@
 import * as React from "react";
 import { useParams } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { DataTable } from "./components/data-table";
 import { TableToolbar } from "./components/table-toolbar";
 import { ColumnHeader } from "./components/column-header";
 import { RowActions } from "./components/row-actions";
-import { AddRowDialog } from "./components/add-row-dialog";
-import { EditRowDialog } from "./components/edit-row-dialog";
+import { RowFormDialog } from "./components/row-form-dialog";
 import { DeleteConfirmation } from "./components/delete-confirmation";
 import { Pagination } from "./components/pagination";
 
@@ -30,12 +26,12 @@ export default function TableViewPage() {
 
   const {
     rows,
+    columns,
     total,
     page,
     totalPages,
     isLoading,
     error,
-    columns: columnMetadata,
     sort,
     handleSortChange,
     handleFilterChange,
@@ -48,7 +44,8 @@ export default function TableViewPage() {
     handleOpenDialog: openAddDialog,
     handleCloseDialog: closeAddDialog,
     isDialogOpen: isAddDialogOpen,
-    duplicateData,
+    isDuplicate,
+    duplicateRow,
     isLoading: isAddLoading,
   } = useAddRow(tableName);
 
@@ -73,14 +70,15 @@ export default function TableViewPage() {
 
   // Build column definitions
   const tableColumns: ColumnDef<TableRow>[] = React.useMemo(() => {
-    if (columnMetadata.length === 0) return [];
+    if (columns.length === 0) return [];
 
-    const cols: ColumnDef<TableRow>[] = columnMetadata.map((col) => ({
+    const cols: ColumnDef<TableRow>[] = columns.map((col) => ({
       accessorKey: col.name,
       header: () => (
         <ColumnHeader
           column={col.name}
           title={col.name}
+          type={col.type}
           sort={sort}
           onSortChange={handleSortChange}
         />
@@ -88,12 +86,17 @@ export default function TableViewPage() {
       cell: ({ row }) => {
         const value = row.getValue(col.name);
 
+        // Show NULL for null/undefined values
+        if (value === null || value === undefined) {
+          return <span className="text-muted-foreground/50 italic">NULL</span>;
+        }
+
         // Format special types
         if (col.type === "timestamp" && value) {
-          return new Date(value as number).toLocaleString();
+          return String(value);
         }
         if (col.type === "boolean") {
-          return value === 1 || value === true ? "Yes" : "No";
+          return value === 1 || value === true ? "1" : "0";
         }
         if (col.type === "json" && value) {
           const str =
@@ -101,7 +104,7 @@ export default function TableViewPage() {
           return str.length > 50 ? str.slice(0, 50) + "..." : str;
         }
 
-        const str = String(value ?? "");
+        const str = String(value);
         return str.length > 100 ? str.slice(0, 100) + "..." : str;
       },
     }));
@@ -122,7 +125,7 @@ export default function TableViewPage() {
 
     return cols;
   }, [
-    columnMetadata,
+    columns,
     sort,
     handleSortChange,
     openEditDialog,
@@ -132,35 +135,18 @@ export default function TableViewPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/admin/database">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">{tableName}</h1>
-        </div>
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-          <p className="text-destructive">{error}</p>
+      <div className="flex-1 p-4">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+          <p className="text-sm text-destructive">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/admin/database">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <h1 className="text-2xl font-bold">{tableName}</h1>
-      </div>
-
+    <div className="flex-1 flex flex-col p-4 space-y-4">
       <TableToolbar
-        columns={columnMetadata}
+        columns={columns}
         onSearch={handleFilterChange}
         onAddRow={() => openAddDialog()}
         onRefresh={handleRefresh}
@@ -169,18 +155,18 @@ export default function TableViewPage() {
 
       {isLoading && rows.length === 0 ? (
         <div className="space-y-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
         </div>
       ) : (
         <>
           <DataTable
             columns={tableColumns}
             data={rows}
-            columnMetadata={columnMetadata}
+            columnMetadata={columns}
             onCellEdit={handleEditCell}
           />
           <Pagination
@@ -192,21 +178,24 @@ export default function TableViewPage() {
         </>
       )}
 
-      <AddRowDialog
+      <RowFormDialog
+        mode="add"
         open={isAddDialogOpen}
         onClose={closeAddDialog}
-        columns={columnMetadata}
+        columns={columns}
         onSubmit={handleAddRow}
-        initialValues={duplicateData}
+        row={duplicateRow}
+        isDuplicate={isDuplicate}
         isLoading={isAddLoading}
       />
 
-      <EditRowDialog
+      <RowFormDialog
+        mode="edit"
         open={isEditDialogOpen}
         onClose={closeEditDialog}
-        columns={columnMetadata}
-        row={editingRow}
+        columns={columns}
         onSubmit={handleEditRow}
+        row={editingRow}
         isLoading={isEditLoading}
       />
 

@@ -2,26 +2,25 @@
 
 import { useState, useCallback } from "react";
 import { useSetAtom, useAtom } from "jotai";
-import {
-  tableDataAtom,
-  editDialogOpenAtom,
-  selectedRowAtom,
-  type TableRow,
-} from "../../state";
+import { tableDataAtom, dialogAtom, type TableRow } from "../../state";
 import { updateRow } from "./update-row.action";
-import { updateCell } from "./update-cell.action";
 import { toast } from "sonner";
 
 export function useEditRow(tableName: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setTableData = useSetAtom(tableDataAtom);
-  const [isDialogOpen, setDialogOpen] = useAtom(editDialogOpenAtom);
-  const [selectedRow, setSelectedRow] = useAtom(selectedRowAtom);
+  const [dialog, setDialog] = useAtom(dialogAtom);
+
+  const isDialogOpen = dialog.type === "edit";
+  const selectedRow = dialog.type === "edit" ? dialog.row : null;
 
   // Edit entire row via dialog
   const handleEditRow = useCallback(
-    async (id: string | number, data: Record<string, unknown>) => {
+    async (data: Record<string, unknown>) => {
+      if (!selectedRow?.id) return;
+      const id = selectedRow.id as string | number;
+
       setIsLoading(true);
       setError(null);
 
@@ -51,8 +50,7 @@ export function useEditRow(tableName: string) {
           ),
         }));
 
-        setDialogOpen(false);
-        setSelectedRow(null);
+        setDialog({ type: null, row: null, isDuplicate: false });
         toast.success("Row updated successfully");
 
         return updatedRow;
@@ -75,10 +73,10 @@ export function useEditRow(tableName: string) {
         setIsLoading(false);
       }
     },
-    [tableName, setTableData, setDialogOpen, setSelectedRow]
+    [tableName, selectedRow, setTableData, setDialog]
   );
 
-  // Edit single cell inline
+  // Edit single cell inline (uses updateRow with single field)
   const handleEditCell = useCallback(
     async (rowId: string | number, column: string, value: unknown) => {
       setIsLoading(true);
@@ -100,7 +98,7 @@ export function useEditRow(tableName: string) {
       });
 
       try {
-        const updatedRow = await updateCell({ tableName, rowId, column, value });
+        const updatedRow = await updateRow({ tableName, id: rowId, data: { [column]: value } });
 
         // Apply actual values
         setTableData((prev) => ({
@@ -135,17 +133,15 @@ export function useEditRow(tableName: string) {
 
   const handleOpenDialog = useCallback(
     (row: TableRow) => {
-      setSelectedRow(row);
-      setDialogOpen(true);
+      setDialog({ type: "edit", row, isDuplicate: false });
     },
-    [setDialogOpen, setSelectedRow]
+    [setDialog]
   );
 
   const handleCloseDialog = useCallback(() => {
-    setDialogOpen(false);
-    setSelectedRow(null);
+    setDialog({ type: null, row: null, isDuplicate: false });
     setError(null);
-  }, [setDialogOpen, setSelectedRow]);
+  }, [setDialog]);
 
   return {
     handleEditRow,

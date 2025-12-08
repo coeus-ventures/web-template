@@ -1,12 +1,12 @@
 "use client";
 
-import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUp, ArrowDown, ChevronsUpDown } from "lucide-react";
 import type { SortState } from "../state";
 
 interface ColumnHeaderProps {
   column: string;
   title: string;
+  type?: string;
   sort: SortState | null;
   onSortChange: (column: string) => void;
 }
@@ -14,6 +14,7 @@ interface ColumnHeaderProps {
 export function ColumnHeader({
   column,
   title,
+  type,
   sort,
   onSortChange,
 }: ColumnHeaderProps) {
@@ -21,19 +22,21 @@ export function ColumnHeader({
   const direction = isSorted ? sort.direction : null;
 
   return (
-    <Button
-      variant="ghost"
+    <button
       onClick={() => onSortChange(column)}
-      className="-ml-4 h-8"
+      className="flex items-center gap-1.5 hover:text-foreground transition-colors text-left w-full"
     >
-      {title}
-      {direction === "asc" ? (
-        <ArrowUp className="ml-2 h-4 w-4" />
-      ) : direction === "desc" ? (
-        <ArrowDown className="ml-2 h-4 w-4" />
-      ) : (
-        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-      )}
-    </Button>
+      <span className="font-medium text-foreground">{title}</span>
+      {type && <span className="text-muted-foreground text-xs">{type}</span>}
+      <span className="ml-auto">
+        {direction === "asc" ? (
+          <ArrowUp className="h-3.5 w-3.5" />
+        ) : direction === "desc" ? (
+          <ArrowDown className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronsUpDown className="h-3.5 w-3.5 opacity-40" />
+        )}
+      </span>
+    </button>
   );
 }

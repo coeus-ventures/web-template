@@ -6,11 +6,9 @@ import {
   tableDataAtom,
   sortAtom,
   filterAtom,
-  columnsAtom,
   type SortState,
 } from "../../state";
 import { fetchTableData } from "./fetch-table-data.action";
-import { fetchTableMetadata } from "./fetch-table-metadata.action";
 
 const LIMIT = 10;
 const DEBOUNCE_MS = 300;
@@ -19,19 +17,9 @@ export function useTableData(tableName: string) {
   const [tableData, setTableData] = useAtom(tableDataAtom);
   const [sort, setSort] = useAtom(sortAtom);
   const [filter, setFilter] = useAtom(filterAtom);
-  const [columns, setColumns] = useAtom(columnsAtom);
   const [localPage, setLocalPage] = useState(1);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Load column metadata on mount
-  useEffect(() => {
-    fetchTableMetadata({ tableName }).then((metadata) => {
-      if (metadata) {
-        setColumns(metadata.columns);
-      }
-    });
-  }, [tableName, setColumns]);
 
   // Fetch data function
   const loadData = useCallback(
@@ -49,6 +37,7 @@ export function useTableData(tableName: string) {
 
         setTableData({
           rows: result.rows,
+          columns: result.columns,
           total: result.total,
           page: result.page,
           totalPages: result.totalPages,
@@ -115,12 +104,12 @@ export function useTableData(tableName: string) {
 
   return {
     rows: tableData.rows,
+    columns: tableData.columns,
     total: tableData.total,
     page: tableData.page,
     totalPages: tableData.totalPages,
     isLoading: tableData.isLoading,
     error: tableData.error,
-    columns,
     sort,
     filter,
     handleSortChange,

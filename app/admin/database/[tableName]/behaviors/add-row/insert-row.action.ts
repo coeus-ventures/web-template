@@ -7,6 +7,7 @@ import {
   getTableByName,
   getTableMetadata,
 } from "../../../lib/schema-introspection";
+import { buildZodSchemaFromMetadata } from "../../../lib/zod-schema-builder";
 
 const inputSchema = z.object({
   tableName: z.string(),
@@ -83,53 +84,4 @@ export async function insertRow(
 
   // Return as plain object for serialization
   return JSON.parse(JSON.stringify(result.rows[0])) as Record<string, unknown>;
-}
-
-// Build a Zod schema from column metadata
-function buildZodSchemaFromMetadata(
-  columns: Array<{
-    name: string;
-    type: string;
-    isNullable: boolean;
-    isPrimaryKey: boolean;
-  }>
-) {
-  const shape: Record<string, z.ZodTypeAny> = {};
-
-  for (const col of columns) {
-    let fieldSchema: z.ZodTypeAny;
-
-    switch (col.type) {
-      case "text":
-        fieldSchema = z.string().nullable().optional();
-        break;
-      case "integer":
-        fieldSchema = z.union([
-          z.number(),
-          z.string().transform(Number),
-        ]).nullable().optional();
-        break;
-      case "boolean":
-        fieldSchema = z.union([
-          z.boolean(),
-          z.number().transform((n) => n === 1),
-        ]).nullable().optional();
-        break;
-      case "timestamp":
-        fieldSchema = z.union([
-          z.number(),
-          z.date().transform((d) => d.getTime()),
-        ]).nullable().optional();
-        break;
-      case "json":
-        fieldSchema = z.any().nullable().optional();
-        break;
-      default:
-        fieldSchema = z.any().nullable().optional();
-    }
-
-    shape[col.name] = fieldSchema;
-  }
-
-  return z.object(shape).passthrough();
 }

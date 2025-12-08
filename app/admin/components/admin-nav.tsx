@@ -3,16 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, LogOut, Database } from "lucide-react";
+import { Users, LogOut, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signOutAction } from "../behaviors/signout/actions/signout.action";
+import { signOutAction } from "../shared/actions/signout.action";
 
 const navItems = [
-  {
-    title: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
   {
     title: "Users",
     href: "/admin/users",
@@ -29,11 +24,11 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center justify-between w-full">
+    <nav className="flex items-center justify-between w-full -ml-3">
       <div className="flex items-center gap-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = pathname.startsWith(item.href);
 
           return (
             <Link

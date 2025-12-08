@@ -2,12 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useSetAtom, useAtom } from "jotai";
-import {
-  tableDataAtom,
-  deleteDialogOpenAtom,
-  selectedRowAtom,
-  type TableRow,
-} from "../../state";
+import { tableDataAtom, dialogAtom, type TableRow } from "../../state";
 import { deleteRow } from "./delete-row.action";
 import { toast } from "sonner";
 
@@ -15,8 +10,10 @@ export function useDeleteRow(tableName: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setTableData = useSetAtom(tableDataAtom);
-  const [isDialogOpen, setDialogOpen] = useAtom(deleteDialogOpenAtom);
-  const [selectedRow, setSelectedRow] = useAtom(selectedRowAtom);
+  const [dialog, setDialog] = useAtom(dialogAtom);
+
+  const isDialogOpen = dialog.type === "delete";
+  const selectedRow = dialog.type === "delete" ? dialog.row : null;
 
   const handleDeleteRow = useCallback(
     async (id: string | number) => {
@@ -44,8 +41,7 @@ export function useDeleteRow(tableName: string) {
       try {
         await deleteRow({ tableName, id });
 
-        setDialogOpen(false);
-        setSelectedRow(null);
+        setDialog({ type: null, row: null, isDuplicate: false });
         toast.success("Row deleted successfully");
       } catch (err) {
         // Rollback optimistic update
@@ -69,22 +65,20 @@ export function useDeleteRow(tableName: string) {
         setIsLoading(false);
       }
     },
-    [tableName, setTableData, setDialogOpen, setSelectedRow]
+    [tableName, setTableData, setDialog]
   );
 
   const handleOpenDialog = useCallback(
     (row: TableRow) => {
-      setSelectedRow(row);
-      setDialogOpen(true);
+      setDialog({ type: "delete", row, isDuplicate: false });
     },
-    [setDialogOpen, setSelectedRow]
+    [setDialog]
   );
 
   const handleCloseDialog = useCallback(() => {
-    setDialogOpen(false);
-    setSelectedRow(null);
+    setDialog({ type: null, row: null, isDuplicate: false });
     setError(null);
-  }, [setDialogOpen, setSelectedRow]);
+  }, [setDialog]);
 
   return {
     handleDeleteRow,

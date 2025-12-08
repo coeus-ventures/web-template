@@ -87,13 +87,16 @@ export function DataTable({
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border overflow-hidden bg-background">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+            <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30 border-b">
+              {headerGroup.headers.map((header, index) => (
+                <TableHead
+                  key={header.id}
+                  className={`h-10 px-4 text-muted-foreground ${index !== headerGroup.headers.length - 1 ? "border-r border-border/50" : ""}`}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -111,20 +114,21 @@ export function DataTable({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={row.original._pending ? "opacity-50" : ""}
+                className={`${row.original._pending ? "opacity-50" : ""} hover:bg-muted/30`}
               >
-                {row.getVisibleCells().map((cell) => {
+                {row.getVisibleCells().map((cell, index) => {
                   const columnId = cell.column.id;
                   const rowId = row.original.id as string | number;
                   const isEditing =
                     editingCell?.rowId === rowId &&
                     editingCell?.column === columnId;
                   const isPk = isPrimaryKeyColumn(columnId);
+                  const isLastColumn = index === row.getVisibleCells().length - 1;
 
                   // Skip rendering CellEditor for action columns
                   if (columnId === "actions") {
                     return (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="h-10 px-4 w-[60px]">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -139,7 +143,7 @@ export function DataTable({
                       onDoubleClick={() =>
                         handleDoubleClick(rowId, columnId, isPk)
                       }
-                      className={!isPk ? "cursor-pointer hover:bg-muted/50" : ""}
+                      className={`h-10 px-4 min-w-[100px] max-w-[250px] ${!isLastColumn ? "border-r border-border/50" : ""} ${!isPk ? "cursor-pointer hover:bg-muted/50" : ""}`}
                     >
                       {isEditing ? (
                         <CellEditor
@@ -149,10 +153,12 @@ export function DataTable({
                           onCancel={handleCancel}
                         />
                       ) : (
-                        flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )
+                        <span className="block truncate text-sm">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </span>
                       )}
                     </TableCell>
                   );

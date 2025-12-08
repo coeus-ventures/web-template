@@ -19,6 +19,7 @@ export interface SortState {
 
 export interface TableState {
   rows: TableRow[];
+  columns: ColumnMetadata[];
   total: number;
   page: number;
   totalPages: number;
@@ -26,9 +27,19 @@ export interface TableState {
   error: string | null;
 }
 
-// Table data atom
+// Consolidated dialog state
+export type DialogType = "add" | "edit" | "delete" | null;
+
+export interface DialogState {
+  type: DialogType;
+  row: TableRow | null;
+  isDuplicate: boolean;
+}
+
+// Table data atom (now includes columns)
 export const tableDataAtom = atom<TableState>({
   rows: [],
+  columns: [],
   total: 0,
   page: 1,
   totalPages: 0,
@@ -42,19 +53,12 @@ export const sortAtom = atom<SortState | null>(null);
 // Filter state atom
 export const filterAtom = atom<string>("");
 
-// Column metadata atom
-export const columnsAtom = atom<ColumnMetadata[]>([]);
-
 // Column visibility atom (column name -> visible)
 export const columnVisibilityAtom = atom<Record<string, boolean>>({});
 
-// Dialog state atoms
-export const addDialogOpenAtom = atom(false);
-export const editDialogOpenAtom = atom(false);
-export const deleteDialogOpenAtom = atom(false);
-
-// Selected row for editing/deleting
-export const selectedRowAtom = atom<TableRow | null>(null);
-
-// Duplicate data for pre-filling add dialog
-export const duplicateDataAtom = atom<Record<string, unknown> | null>(null);
+// Consolidated dialog atom
+export const dialogAtom = atom<DialogState>({
+  type: null,
+  row: null,
+  isDuplicate: false,
+});

@@ -23,8 +23,17 @@ const inputSchema = z.object({
 
 export type FetchTableDataInput = z.infer<typeof inputSchema>;
 
+export interface ColumnInfo {
+  name: string;
+  type: string;
+  isNullable: boolean;
+  isPrimaryKey: boolean;
+  isUnique: boolean;
+}
+
 export interface FetchTableDataResult {
   rows: Record<string, unknown>[];
+  columns: ColumnInfo[];
   total: number;
   page: number;
   totalPages: number;
@@ -95,10 +104,20 @@ export async function fetchTableData(
     return JSON.parse(JSON.stringify(row)) as Record<string, unknown>;
   });
 
+  // Include column metadata in response (as plain objects)
+  const columns: ColumnInfo[] = metadata.columns.map((col) => ({
+    name: col.name,
+    type: col.type,
+    isNullable: col.isNullable,
+    isPrimaryKey: col.isPrimaryKey,
+    isUnique: col.isUnique,
+  }));
+
   const totalPages = Math.ceil(total / limit);
 
   return {
     rows,
+    columns,
     total,
     page,
     totalPages,
