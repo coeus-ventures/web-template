@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/" ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/api") ||
+    pathname.startsWith("/playground") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/public") ||
     pathname === "/favicon.ico"
