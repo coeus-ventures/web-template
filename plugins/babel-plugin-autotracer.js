@@ -67,6 +67,7 @@ module.exports = function autoTracerPlugin({ types: t }, options = {}) {
     if (t.isObjectExpression(node)) {
       return node.properties.some(prop => {
          if (t.isObjectProperty(prop)) return hasSideEffects(prop.value, depth + 1) || (prop.computed && hasSideEffects(prop.key, depth + 1));
+         if (t.isSpreadElement(prop)) return hasSideEffects(prop.argument, depth + 1);
          return false;
       });
     }

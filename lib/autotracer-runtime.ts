@@ -44,9 +44,7 @@ export function __autotracer_write(entry: AutoTracerEntry) {
 
       const dir = path.dirname(fullPath);
       
-      if (!fs.existsSync(dir)) {
-        await fs.promises.mkdir(dir, { recursive: true });
-      }
+      await fs.promises.mkdir(dir, { recursive: true });
 
       const logLine = JSON.stringify(entry) + '\n';
 
@@ -62,5 +60,9 @@ export function __autotracer_write(entry: AutoTracerEntry) {
 
   // Encadeamento de Promises para garantir a ordem dos logs (Queue simples)
   // "Fire and forget": não esperamos o log terminar para continuar a execução do código original
-  writePromise = writePromise.then(logProcess).catch(() => {});
+  writePromise = writePromise.then(logProcess).catch((err) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[AutoTracer Queue Error]', err);
+    }
+  });
 }
