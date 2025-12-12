@@ -22,7 +22,8 @@
       "@/*": ["./*"],
       "@/db": ["./db"],
       "@/app.config": ["./app.config"],
-      "@/lib": ["./lib"]
+      "@/lib": ["./lib"],
+      "@autotracer/runtime": ["./lib/autotracer-runtime"]
     }
   },
   "include": [
