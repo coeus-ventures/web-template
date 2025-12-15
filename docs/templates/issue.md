@@ -4,6 +4,8 @@ Brief overview of what this issue accomplishes.
 
 # Functional Specification
 
+
+
 ## Behavior: [Name]
 Directory: `[page-directory]/behaviors/[behavior-name]/`
 
