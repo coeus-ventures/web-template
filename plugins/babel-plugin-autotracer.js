@@ -48,6 +48,61 @@ module.exports = function autoTracerPlugin({ types: t }, options = {}) {
     return null;
   }
 
+  function hasSideEffects(node, depth = 0) {
+    if (depth > 10) return true; // Limite recursão
+    if (!node) return false;
+
+    // Side effects diretos
+    if (t.isCallExpression(node)) return true;
+    if (t.isNewExpression(node)) return true;
+    if (t.isUpdateExpression(node)) return true; // i++, --j
+    if (t.isAssignmentExpression(node)) return true; // x = 5
+    if (t.isYieldExpression(node)) return true;
+    if (t.isAwaitExpression(node)) return true;
+
+    // Spread pode conter qualquer expressão com side effect
+    if (t.isSpreadElement(node)) return hasSideEffects(node.argument, depth + 1);
+
+    // Arrays/Objects podem ter spreads ou call expressions
+    if (t.isArrayExpression(node)) {
+      return node.elements.some(el => el && hasSideEffects(el, depth + 1));
+    }
+    if (t.isObjectExpression(node)) {
+      return node.properties.some(prop => {
+        if (t.isObjectProperty(prop)) {
+          return hasSideEffects(prop.value, depth + 1) || 
+                 (prop.computed && hasSideEffects(prop.key, depth + 1));
+        }
+        if (t.isSpreadElement(prop)) return hasSideEffects(prop.argument, depth + 1);
+        return false;
+      });
+    }
+
+    // Expressões condicionais/lógicas
+    if (t.isConditionalExpression(node)) {
+      return hasSideEffects(node.test, depth + 1) || 
+             hasSideEffects(node.consequent, depth + 1) || 
+             hasSideEffects(node.alternate, depth + 1);
+    }
+    if (t.isLogicalExpression(node)) {
+      return hasSideEffects(node.left, depth + 1) || hasSideEffects(node.right, depth + 1);
+    }
+    if (t.isBinaryExpression(node)) {
+      return hasSideEffects(node.left, depth + 1) || hasSideEffects(node.right, depth + 1);
+    }
+    if (t.isUnaryExpression(node)) {
+      return hasSideEffects(node.argument, depth + 1);
+    }
+
+    // Member expressions podem ter side effects no objeto ou propriedade
+    if (t.isMemberExpression(node)) {
+      return hasSideEffects(node.object, depth + 1) || 
+             (node.computed && hasSideEffects(node.property, depth + 1));
+    }
+
+    return false;
+  }
+
   function injectFunctionEntry(functionNode, functionName, filePath) {
     const line = functionNode.loc ? functionNode.loc.start.line : 0;
 
@@ -188,7 +243,10 @@ module.exports = function autoTracerPlugin({ types: t }, options = {}) {
         ]);
         tracerCall._autoTracerSkip = true;
 
-        const clonedCall = t.cloneNode(callExpr, false, false);
+        const argumentsHaveSideEffects = callExpr.arguments.some(arg => hasSideEffects(arg));
+        const clonedCall = argumentsHaveSideEffects
+          ? t.cloneNode(callExpr, true, true)
+          : t.cloneNode(callExpr, false, false);
         clonedCall._autoTracerSkip = true;
 
         const sequenceExpr = t.sequenceExpression([tracerCall, clonedCall]);
