@@ -1,6 +1,6 @@
 "use server";
 
-import { signOut } from "@/app/auth/behaviors/signout/actions/signout";
+import { signOut } from "@/shared/behaviors/signout/actions/signout";
 import { SIGNUP_URL } from "@/app.config";
 
 export async function signOutAction() {

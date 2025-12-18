@@ -5,144 +5,207 @@ Brief overview of what this issue accomplishes.
 # Functional Specification
 
 ## Behavior: [Name]
-Directory: `[page-directory]/behaviors/[behavior-name]/`
 
-[Brief description of what this behavior allows users to do and its purpose]
+[One paragraph describing the behavior in user-facing terms.]
+Directory: `app/[role]/[page]/behaviors/[behavior-name]/`
 
-* User is [authentication state]
-* Database has [initial state]
-* Application is in [mode/state]
+### Rules
 
-### [Primary Use Case]
+#### [Rule Name]
+- When:
+  - [Condition]
+  - [Condition]
+- Then:
+  - [Outcome]
+  - [Outcome]
 
-#### Preconditions
-users:
-id, email, role, status
-1, user@example.com, client, active
+#### [Rule Name]
+- When:
+  - [Condition]
+- Then:
+  - [Outcome]
 
-projects:
-id, user_id, name, status
-1, 1, Test Project, active
+### Examples
 
-#### Workflow
-* User is logged in as "client"
-* Navigate to "[page/feature]"
-* [Perform primary action]
-* [Verify expected result appears]
-* Database contains [expected records]
+#### [Primary Use Case]
 
-#### Postconditions
-users:
-id, email, role, status
-1, user@example.com, client, active
+##### PreDB
+[table-name]:
+col_a, col_b, col_c
+1, foo, bar
 
-projects:
-id, user_id, name, status
-1, 1, Test Project, active
-2, 1, New Project, active
+[table-name]:
+col_a, col_b
+1, baz
 
-audit_logs:
-id, user_id, action, resource_id
-1, 1, create_project, 2
+##### Steps
+* Act: [User or system performs an action that changes state]
+* Act: [Another action]
+* Check: [Observable result in UI / API response]
+* Check: [Observable result in database / derived state]
 
+##### PostDB
+[table-name]:
+col_a, col_b, col_c
+1, foo, bar
+2, new, row
 
-### [Edge Case or Alternative Flow]
+#### [Edge Case or Alternative Flow]
 
+##### PreDB
+[Optional CSV tables as needed]
 
-#### Workflow
-* User with suspended account attempts login
-* System blocks access
-* Error message "Account suspended" appears
-* Login attempt is logged
-
+##### Steps
+* Act: [Trigger the edge case]
+* Check: Error "[expected message]" is shown
+* Check: No new records are created
 
 # Technical Specification
 
-## Action: [Action Name]
-File: `[behavior-path]/actions/[action-name].action.ts`
-Input: `{ field1: string, field2: number, field3?: boolean }`
-Returns: `Promise<Result<Type, Error>>`
+## Action: [actionName](input: InputType): Promise<ResultType>
+
+File: `[behavior-path]/[action-name].action.ts`
 
 [Single sentence describing what this action does and when it's called]
 
-### Preconditions
+- Given: [input parameters and assumptions]
+- Returns: [value or outcome returned]
+- Calls: [direct dependencies - Models, Integrations]
+
+### Example: [Primary Use Case]
+
+#### PreDB
 [table_name]:
 column1, column2, column3
 value1, value2, value3
 
-### [Primary Use Case]
+#### Steps
+* Call: [actionName]({ field1: "value", field2: 123 }) as user 1
+* Returns: { id: 1, field1: "value", status: "created" }
 
-* Validates field1 is between 3-100 characters
-* Validates field2 is positive integer
-* Checks user permissions for [resource]
-* Validates [business rule]
-* Transforms data by [transformation]
-* Calls Model.[method] to persist
-* Triggers [side effect] if successful
-
-### Postconditions
+#### PostDB
 [table_name]:
 column1, column2, column3, column4
 value1, value2, value3, newval
 
+### Example: [Error Case]
+
+#### PreDB
+[table_name]:
+column1, column2
+value1, value2
+
+#### Steps
+* Call: [actionName]({ field1: "invalid" }) as user 1
+* Throws: "[Expected error message]"
+
+#### PostDB
+[table_name]:
+column1, column2
+value1, value2
+
 ---
 
-## Hook: use-[behavior-name]
+## Hook: use[BehaviorName]()
+
 File: `[behavior-path]/use-[behavior-name].ts`
-Returns: `{ mutate, isPending, error }`
 
-[Single sentence describing what this hook manages and its UI interaction]
+Entry point for the [Behavior Name] behavior. [What it validates, updates, and calls.]
 
-### [Primary Use Case]
+### State
+- isLoading: boolean
+- error: string | null
 
-* Reads from `[atomName]` atom
-* Validates input before calling action
-* Shows inline errors for [fields]
-* Prevents submission if invalid
-* Updates `[atomName]` optimistically
-* Rolls back on error
+### Returns
+- handle[BehaviorName]: (input: Type) => Promise<void> - triggers the behavior
+- isLoading: boolean - submission in progress
+- error: string | null - current error message
 
-### [Error Recovery]
+### Dependencies
+- useSetAtom([atomName]) - for optimistic updates
 
-* Displays toast notification on error
-* Reverts optimistic update
-* Preserves form data for retry
+### Example: [Primary Use Case]
+
+#### PreState
+[atomName]: []
+isLoading: false
+error: null
+
+#### Steps
+* Call: handle[BehaviorName]({ field: "value" })
+* Returns: void
+
+#### PostState
+[atomName]: [{ id: 1, field: "value", pending: false }]
+isLoading: false
+error: null
+
+### Example: [Validation Error]
+
+#### PreState
+[atomName]: []
+isLoading: false
+error: null
+
+#### Steps
+* Call: handle[BehaviorName]({ field: "" })
+* Throws: "[Validation error message]"
+
+#### PostState
+[atomName]: []
+isLoading: false
+error: "[Validation error message]"
 
 ---
 
 ## Component: [ComponentName]
+
 File: `[page-path]/components/[component-name].tsx`
-Props: `{ prop1: Type, prop2?: Type }`
 
 [Single sentence describing what this component renders and its purpose]
 
-### [Primary Use Case]
+### Props
+- [propName]: [Type] - [description]
+- [propName]?: [Type] - [optional prop description]
 
-* [Specific UI elements it renders]
-* Uses `use-[hook-name]` for [behavior]
-* Renders [UI elements]
-* Handles [user interactions]
+### State
+
+#### Local
+- [stateName]: [Type] - [description]
+
+#### Shared
+- [atomName]: [Type] - [description of shared state]
+
+### Children
+- [ChildComponent] - [purpose]
+- [ChildComponent] - [purpose]
 
 ---
 
-## Service: [ServiceName]
-File: `services/[service-name].ts`
+## Integration: [IntegrationName]
+
+File: `shared/integrations/[integration-name]/index.ts`
 
 [Single sentence describing what external system this integrates with and why]
 
-### [Primary Use Case]
+### Methods
 
-* Integrates with [external API/service]
-* Handles [authentication/rate limiting/retries]
-* Transforms external data to internal format
-* Returns typed responses
-* Throws specific errors for different failure cases
+#### [methodName](input: Type): Promise<ResultType>
+- Given: [input parameters]
+- Returns: [expected result]
+- Throws: [error conditions]
 
-### [Error Handling]
+### Example: [Primary Use Case]
 
-* Retries on network failures (max 3 attempts)
-* Throws typed errors for API failures
-* Logs errors for monitoring
+#### Steps
+* Call: [IntegrationName].[methodName]({ param: "value" })
+* Returns: { result: "data" }
+
+### Example: [Error Case]
+
+#### Steps
+* Call: [IntegrationName].[methodName]({ param: "invalid" })
+* Throws: "[Expected error]"
 
 # Tasks
 
@@ -156,4 +219,3 @@ Implementation tasks for this feature
 # Notes
 
 Additional implementation considerations and decisions
-

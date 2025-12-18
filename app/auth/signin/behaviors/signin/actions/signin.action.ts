@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { authErrorHandler, throwAuthError } from "@/lib/auth-error";
+import { authErrorHandler, throwAuthError } from "@/lib/auth/error";
 import { HOME_URL } from "@/app.config";
 
 interface ActionResult {

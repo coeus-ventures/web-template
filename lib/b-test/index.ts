@@ -1,4 +1,2 @@
-
-export { Tester } from './tester';
-export { PreDB } from './predb';
-export { PostDB } from './postdb';
+export { Tester, TesterError } from './tester';
+export type { Snapshot, DiffResult } from './tester';

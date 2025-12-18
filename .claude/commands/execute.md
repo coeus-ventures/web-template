@@ -20,7 +20,7 @@ This build process leverages specialized agents for each layer of the architectu
 | **test-writer** | Writes all types of tests: behavior (.spec.ts), action (.action.test.ts), and hook (.test.tsx) | Testing |
 | **route-writer** | Creates API routes and server-side route handlers | Backend |
 
-Each agent is an expert in their domain and follows the project's two-layer architecture patterns. They ensure consistency, include proper debug logging, and handle errors appropriately.
+Each agent is an expert in their domain and follows the project's three-layer architecture patterns. They ensure consistency, include proper debug logging, and handle errors appropriately.
 
 **Prerequisites**: If the page.tsx the behavior belongs to doesn't exist yet, create an empty page with the 'use client' directive.
 
@@ -28,7 +28,7 @@ Each agent is an expert in their domain and follows the project's two-layer arch
 
 Here is the order of steps to execute the issue: 
 
-1. Create or Update Services (if necessary)
+1. Create or Update Integrations (if necessary)
 2. Create or Update State (Jotai Atoms)
 3. Create or Update Actions
 4. Create or Update Hooks
@@ -262,8 +262,8 @@ The build command includes comprehensive debug logging for all layers:
 - Database queries and results
 - Success/error responses
 
-**🔧 SERVICE** logs show:
-- Service method calls with parameters
+**🔧 INTEGRATION** logs show:
+- Integration method calls with parameters
 - External API requests and responses
 - Success/error states
 

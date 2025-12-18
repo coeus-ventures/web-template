@@ -33,7 +33,7 @@ Path: [behavior-directory-path]
 
 ## [Primary Use Case Scenario Name]
 
-### Preconditions
+### PreDB
 [Database table state before behavior execution]
 table_name:
 column1, column2, column3
@@ -45,7 +45,7 @@ value1, value2, value3
 * [Document navigation and page transitions]
 * [Note any loading states or confirmations]
 
-### Postconditions
+### PostDB
 [Database table state after behavior execution]
 table_name:
 column1, column2, column3
@@ -60,7 +60,7 @@ updated_value1, updated_value2, updated_value3
    - Place it at the root of the behavior folder
    - Focus on USER BEHAVIOR, not technical implementation details
    - Use clear step-by-step workflow with `*` bullets
-   - Include actual database state changes (preconditions/postconditions)
+   - Include actual database state changes (PreDB/PostDB)
    - Document multiple scenarios when applicable (success, error, edge cases)
    - Use past tense for user actions ("User clicked", "Dialog appeared")
 

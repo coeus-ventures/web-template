@@ -6,13 +6,13 @@ This document provides detailed examples of the functional specification format 
 
 Functional specifications follow this three-part structure:
 
-### 1. Preconditions
+### 1. PreDB
 Define the initial state of the database before the test runs. Uses a CSV-like format where the first line is column headers and subsequent lines are data rows.
 
 ### 2. Workflow
 A bullet-point list describing the sequence of actions and expected behavior. The first bullet typically indicates the public method being tested.
 
-### 3. Postconditions
+### 3. PostDB
 Define the expected state of the database after the test runs. Includes both pre-existing rows and new rows created during the test.
 
 ## Placeholder Values
@@ -33,7 +33,7 @@ Use these placeholders for runtime-generated values:
 ```markdown
 ## Create new idea with empty archive
 
-### Preconditions
+### PreDB
 idea:
 (empty table)
 
@@ -44,7 +44,7 @@ idea:
 * Idea is saved to database with embedding
 * Returns Idea object
 
-### Postconditions
+### PostDB
 idea:
 id, description, embedding, status, createdAt
 <uuid>, "A simple task management app", <1536-dim vector>, pending, <timestamp>
@@ -52,7 +52,7 @@ id, description, embedding, status, createdAt
 
 **Key Characteristics:**
 - Uses `(empty table)` to indicate no pre-existing data
-- Postconditions show only the newly created row
+- PostDB show only the newly created row
 - Status defaults to 'pending'
 - Placeholders indicate values generated at runtime
 
@@ -61,7 +61,7 @@ id, description, embedding, status, createdAt
 ```markdown
 ## Create new idea with successful products in archive
 
-### Preconditions
+### PreDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo list app", <vector-1>, complete, <timestamp-1>
@@ -76,7 +76,7 @@ idea-2, "Blog platform", <vector-2>, complete, <timestamp-2>
 * Idea is saved to database
 * Returns Idea object
 
-### Postconditions
+### PostDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo list app", <vector-1>, complete, <timestamp-1>
@@ -85,10 +85,10 @@ idea-3, "Collaborative kanban board", <vector-3>, pending, <timestamp-3>
 ```
 
 **Key Characteristics:**
-- Preconditions show multiple pre-existing rows
+- PreDB show multiple pre-existing rows
 - Each row uses hardcoded IDs for test data (idea-1, idea-2)
 - Placeholders use suffixes to distinguish different values (<timestamp-1>, <timestamp-2>)
-- Postconditions include both pre-existing AND new rows
+- PostDB include both pre-existing AND new rows
 - New row gets a new placeholder ID (idea-3)
 
 ### Example 3: Filtering by Status
@@ -96,7 +96,7 @@ idea-3, "Collaborative kanban board", <vector-3>, pending, <timestamp-3>
 ```markdown
 ## Create new idea with failed products in archive
 
-### Preconditions
+### PreDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Complex real-time game engine", <vector-1>, failed, <timestamp-1>
@@ -110,7 +110,7 @@ idea-1, "Complex real-time game engine", <vector-1>, failed, <timestamp-1>
 * Idea is embedded and saved
 * Returns Idea object
 
-### Postconditions
+### PostDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Complex real-time game engine", <vector-1>, failed, <timestamp-1>
@@ -127,7 +127,7 @@ idea-2, "Simple note-taking app", <vector-2>, pending, <timestamp-2>
 ```markdown
 ## Create new idea with both successful and failed products
 
-### Preconditions
+### PreDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo list app", <vector-1>, complete, <timestamp-1>
@@ -145,7 +145,7 @@ idea-2, "Complex real-time game", <vector-2>, failed, <timestamp-2>
 * Idea is saved to database
 * Returns Idea object
 
-### Postconditions
+### PostDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo list app", <vector-1>, complete, <timestamp-1>
@@ -166,7 +166,7 @@ idea-3, "Todo app with real-time sync", <vector-3>, pending, <timestamp-3>
 ```markdown
 ## Create specification from idea
 
-### Preconditions
+### PreDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo list app", <vector>, complete, <timestamp-1>
@@ -181,7 +181,7 @@ spec:
 * Spec is saved with foreign key to idea
 * Returns Spec object
 
-### Postconditions
+### PostDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo list app", <vector>, complete, <timestamp-1>
@@ -192,18 +192,18 @@ id, ideaId, content, createdAt
 ```
 
 **Key Characteristics:**
-- Multiple tables defined separately in Preconditions
+- Multiple tables defined separately in PreDB
 - Each table section starts with `table_name:`
 - Foreign keys use hardcoded IDs (ideaId: idea-1)
 - Empty tables use `(empty table)` notation
-- Postconditions show state of ALL relevant tables
+- PostDB show state of ALL relevant tables
 
 ### Example 6: Cascade Updates
 
 ```markdown
 ## Update product status after completion
 
-### Preconditions
+### PreDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo app", <vector>, pending, <timestamp-1>
@@ -218,7 +218,7 @@ prod-1, idea-1, in_progress, <timestamp-2>
 * Idea status is updated to 'complete' (cascade effect)
 * Returns updated Product object
 
-### Postconditions
+### PostDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "Todo app", <vector>, complete, <timestamp-1>
@@ -235,7 +235,7 @@ prod-1, idea-1, complete, <timestamp-2>
 
 ## Translation to Tests
 
-### Preconditions ’ PreDB
+### PreDB ï¿½ PreDB
 
 ```typescript
 // Empty table
@@ -268,7 +268,7 @@ await PreDB(db, schema, {
 });
 ```
 
-### Workflow ’ Test Execution
+### Workflow ï¿½ Test Execution
 
 ```typescript
 // From: Call `dreamer.create()`
@@ -278,7 +278,7 @@ const result = await dreamer.create();
 const result = await judge.createSpec('idea-1');
 ```
 
-### Postconditions ’ Assertions + PostDB
+### PostDB ï¿½ Assertions + PostDB
 
 ```typescript
 // Assertions based on expected values
@@ -305,7 +305,7 @@ await PostDB(db, schema, {
 ### Pattern 1: Testing with No Pre-existing Data
 
 ```markdown
-### Preconditions
+### PreDB
 tableName:
 (empty table)
 ```
@@ -320,7 +320,7 @@ await PreDB(db, schema, {
 ### Pattern 2: Using Multiple Distinct Placeholders
 
 ```markdown
-### Preconditions
+### PreDB
 idea:
 id, description, embedding, status, createdAt
 idea-1, "First idea", <vector-1>, complete, <timestamp-1>
@@ -380,14 +380,14 @@ Maps to:
 - Use descriptive scenario names that explain the test case
 - Keep workflows focused on behavior, not implementation
 - Use placeholders for runtime-generated values
-- Include both pre-existing and new rows in Postconditions
+- Include both pre-existing and new rows in PostDB
 - Use hardcoded IDs for test data (idea-1, spec-1, etc.)
 - Use `(empty table)` notation for tables with no data
 
 ### DON'T:
 - Include implementation details in Workflow (focus on what happens, not how)
 - Use actual UUIDs or timestamps in specs (use placeholders)
-- Omit pre-existing rows from Postconditions (show complete state)
+- Omit pre-existing rows from PostDB (show complete state)
 - Mix concerns - each scenario should test one logical case
 - Add unnecessary complexity - keep specs simple and focused
 
@@ -396,12 +396,12 @@ Maps to:
 When writing a new functional specification:
 
 - [ ] Scenario has clear, descriptive name
-- [ ] Preconditions define ALL relevant table states
+- [ ] PreDB define ALL relevant table states
 - [ ] Workflow starts with method call (e.g., "Call `class.method(args)`")
 - [ ] Workflow describes behavior, not implementation
 - [ ] Placeholders used for generated values
-- [ ] Postconditions show complete expected database state
-- [ ] Postconditions include both pre-existing and new rows
+- [ ] PostDB show complete expected database state
+- [ ] PostDB include both pre-existing and new rows
 - [ ] Column names match database schema exactly
 - [ ] Enum values match schema definitions
 - [ ] Foreign key relationships are correctly specified
@@ -410,11 +410,11 @@ When writing a new functional specification:
 
 Good scenario names that translate to clear test names:
 
-- "Create new idea with empty archive" ’ "should create new idea when archive is empty"
-- "Create new idea with successful products" ’ "should create new idea with successful products in archive"
-- "Update product status after completion" ’ "should update product status after completion"
-- "Generate spec from idea" ’ "should generate spec from idea"
-- "Reject invalid input" ’ "should reject invalid input"
+- "Create new idea with empty archive" ï¿½ "should create new idea when archive is empty"
+- "Create new idea with successful products" ï¿½ "should create new idea with successful products in archive"
+- "Update product status after completion" ï¿½ "should update product status after completion"
+- "Generate spec from idea" ï¿½ "should generate spec from idea"
+- "Reject invalid input" ï¿½ "should reject invalid input"
 
 ## Notes
 

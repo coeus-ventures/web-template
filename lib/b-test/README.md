@@ -1,14 +1,12 @@
-# Behave Test Services
+# BTest
 
-A collection of testing utilities for behavior-driven testing with Playwright and LLM-powered assertions.
+LLM-powered browser testing utilities with HTML snapshot capture and natural language assertions.
 
-## Services
-
-### Tester
+## Tester
 
 A Playwright-based testing service that captures HTML snapshots and uses LLM-powered assertions to verify page conditions.
 
-#### Features
+### Features
 
 - **HTML Snapshots**: Capture full page HTML content with timestamps
 - **LLM Assertions**: Use natural language to assert conditions on page content
@@ -16,11 +14,11 @@ A Playwright-based testing service that captures HTML snapshots and uses LLM-pow
 - **Polling with Conditions**: Wait for conditions to be met with intelligent polling
 - **In-Memory Storage**: Snapshots are stored only during test execution
 
-#### Basic Usage
+### Basic Usage
 
 ```typescript
 import { chromium } from 'playwright';
-import { Tester } from '@/services/behave-test';
+import { Tester } from '@/lib/b-test';
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
@@ -47,15 +45,15 @@ const buttonWasClicked = await tester.assert('button click resulted in visible c
 await tester.waitFor('loading spinner is not visible', 10000);
 ```
 
-#### API Reference
+### API Reference
 
-##### `snapshot(page?: Page)`
+#### `snapshot(page?: Page)`
 Captures current page HTML content.
 
 - **Returns**: `{ success: boolean, snapshotId: string }`
 - **Storage**: Stored as `currentSnapshot`, `beforeSnapshot`, or `afterSnapshot`
 
-##### `assert(condition: string)`
+#### `assert(condition: string)`
 Uses LLM to evaluate a condition by comparing stored snapshot with current page state.
 
 - **Parameters**: `condition` - Natural language description
@@ -63,14 +61,14 @@ Uses LLM to evaluate a condition by comparing stored snapshot with current page 
 - **Behavior**: Takes fresh snapshot and diffs it with stored snapshot, then asks LLM to evaluate the changes
 - **Requires**: Stored snapshot must exist
 
-##### `diff()`
+#### `diff()`
 Compares stored snapshot with current page state.
 
 - **Returns**: `DiffResult` with structured changes and summary
 - **Behavior**: Takes fresh snapshot of current page and compares with stored snapshot
 - **Requires**: Stored snapshot must exist
 
-##### `waitFor(condition: string, timeout?: number)`
+#### `waitFor(condition: string, timeout?: number)`
 Polls page until condition is met.
 
 - **Parameters**:
@@ -79,7 +77,7 @@ Polls page until condition is met.
 - **Returns**: `boolean` (true when condition met)
 - **Behavior**: Polls every 500ms, throws on timeout
 
-#### Snapshot Management
+### Snapshot Management
 
 ```typescript
 // Get specific snapshot
@@ -95,7 +93,7 @@ tester.clearSnapshots();
 tester.setReferenceSnapshot(snapshotId);
 ```
 
-#### Error Handling
+### Error Handling
 
 The service throws `TesterError` with specific error codes:
 
@@ -107,16 +105,12 @@ The service throws `TesterError` with specific error codes:
 - `WAIT_TIMEOUT`: Condition not met within timeout
 - `INVALID_SNAPSHOT_ID`: Invalid snapshot reference
 
-### PreDB & PostDB
-
-Utilities for deterministic database testing (see existing documentation).
-
 ## Testing
 
-Run all tests including real Playwright integration:
+Run tests:
 
 ```bash
-bun test services/behave-test/tests/tester.test.ts
+bun test lib/b-test/tests/tester.test.ts
 ```
 
 The tests use real Playwright browsers for authentic testing of HTML capture and page interactions.
@@ -124,7 +118,6 @@ The tests use real Playwright browsers for authentic testing of HTML capture and
 ## Dependencies
 
 - `playwright` - Browser automation
-- `diff-dom` - HTML content comparison
 - `ai` & `@ai-sdk/openai` - LLM integration
 - `vitest` - Testing framework
 - `jsdom` - DOM environment for testing
