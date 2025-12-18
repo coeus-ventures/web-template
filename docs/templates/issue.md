@@ -4,59 +4,61 @@ Brief overview of what this issue accomplishes.
 
 # Functional Specification
 
-
-
 ## Behavior: [Name]
-Directory: `[page-directory]/behaviors/[behavior-name]/`
 
-[Brief description of what this behavior allows users to do and its purpose]
+[One paragraph describing the behavior in user-facing terms.]
+Directory: `app/[role]/[page]/behaviors/[behavior-name]/`
 
-* User is [authentication state]
-* Database has [initial state]
-* Application is in [mode/state]
+### Rules
 
-### [Primary Use Case]
+#### [Rule Name]
+- When:
+  - [Condition]
+  - [Condition]
+- Then:
+  - [Outcome]
+  - [Outcome]
 
-#### Preconditions
-users:
-id, email, role, status
-1, user@example.com, client, active
+#### [Rule Name]
+- When:
+  - [Condition]
+- Then:
+  - [Outcome]
 
-projects:
-id, user_id, name, status
-1, 1, Test Project, active
+### Examples
 
-#### Workflow
-* User is logged in as "client"
-* Navigate to "[page/feature]"
-* [Perform primary action]
-* [Verify expected result appears]
-* Database contains [expected records]
+#### [Primary Use Case]
 
-#### Postconditions
-users:
-id, email, role, status
-1, user@example.com, client, active
+##### Preconditions
+[table-name]:
+col_a, col_b, col_c
+1, foo, bar
 
-projects:
-id, user_id, name, status
-1, 1, Test Project, active
-2, 1, New Project, active
+[table-name]:
+col_a, col_b
+1, baz
 
-audit_logs:
-id, user_id, action, resource_id
-1, 1, create_project, 2
+##### Steps
+* Act: [User or system performs an action that changes state]
+* Act: [Another action]
+* Check: [Observable result in UI / API response]
+* Check: [Observable result in database / derived state]
 
+##### Postconditions
+[table-name]:
+col_a, col_b, col_c
+1, foo, bar
+2, new, row
 
-### [Edge Case or Alternative Flow]
+#### [Edge Case or Alternative Flow]
 
+##### Preconditions
+[Optional CSV tables as needed]
 
-#### Workflow
-* User with suspended account attempts login
-* System blocks access
-* Error message "Account suspended" appears
-* Login attempt is logged
-
+##### Steps
+* Act: [Trigger the edge case]
+* Check: Error "[expected message]" is shown
+* Check: No new records are created
 
 # Technical Specification
 
@@ -158,4 +160,3 @@ Implementation tasks for this feature
 # Notes
 
 Additional implementation considerations and decisions
-

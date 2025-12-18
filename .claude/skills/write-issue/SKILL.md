@@ -1,50 +1,132 @@
 ---
 name: write-issue
-description: Create or update project issues following the standardized format with Functional Specifications (Preconditions/Workflow/Postconditions), Technical Specifications, and hierarchical task lists. Use when user asks to create/update an issue, document requirements, or write specifications for a new feature.
+description: Create or update project issues following the Epic specification format with Behaviors (Rules + Examples), Technical Specifications (Action/Hook/Component/Service), and task lists. Use when user asks to create/update an issue, document requirements, or write specifications for a new feature.
 ---
 
 # Write Issue
 
 ## Overview
 
-This skill helps create and update project issues that combine behavioral specifications with technical implementation details. Issues written in this format serve as both documentation and implementation guides, with functional specs that translate directly into behavioral tests using the PreDB/PostDB pattern.
+This skill creates issues that combine behavioral specifications with technical implementation details. Issues follow the Epic specification format where **Behavior is the bridge** between functional and technical specs.
 
 ## Issue Structure
 
-Issues follow this format:
-
 ```markdown
-# ISSUE-ID Title
+# [Issue title]
 
-Brief description.
+Brief overview of what this issue accomplishes.
 
-# Functional Specifications
+# Functional Specification
 
-## Scenario Name
+## Behavior: [Name]
 
-### Preconditions
-[CSV-like database state]
+[One paragraph describing the behavior in user-facing terms.]
+Directory: `app/[role]/[page]/behaviors/[behavior-name]/`
 
-### Workflow
-* Call `class.method(args)`
-* [What happens step by step]
+### Rules
 
-### Postconditions
-[Expected database state]
+#### [Rule Name]
+- When:
+  - [Condition]
+- Then:
+  - [Outcome]
+
+### Examples
+
+#### [Primary Use Case]
+
+##### Preconditions
+[table-name]:
+col_a, col_b, col_c
+1, foo, bar
+
+##### Steps
+* Act: [User or system performs an action]
+* Act: [Another action]
+* Check: [Observable result in UI / API response]
+* Check: [Observable result in database]
+
+##### Postconditions
+[table-name]:
+col_a, col_b, col_c
+1, foo, bar
+2, new, row
+
+# Technical Specification
+
+## createProject(input: CreateProjectInput): Promise<Project>
+
+Creates a new project for the authenticated user.
+
+- Given: project name and authenticated user with "client" role
+- Returns: the newly created project
+- Calls: ProjectModel.findByNameAndUser, ProjectModel.create
+
+### Example: Create project successfully
+
+#### Preconditions
+users:
+id, email, role
+1, user@example.com, client
+
+projects:
+id, user_id, name, status
+1, 1, Existing Project, active
+
+#### Postconditions
+projects:
+id, user_id, name, status, created_at
+1, 1, Existing Project, active, <timestamp>
+2, 1, New Project, draft, <timestamp>
 
 ---
 
-# Technical Specifications
+## useCreateProject(options?: Options)
 
-## Database Schema
-[Drizzle ORM schema code]
+Manages form state and submission logic for creating a new project.
 
-## Class Structure
-[Implementation skeleton]
+### Parameters
+- options.onSuccess: (project: Project) => void - callback after successful creation
 
-## Tasks
-- [ ] Category
-  - [ ] Specific task
+### State
+- name: string
+- errors: ValidationErrors
+- isPending: boolean
+
+### Returns
+- name: string - current name value
+- errors: ValidationErrors - field-level errors
+- isPending: boolean - submission in progress
+- setName: (value: string) => void - update name field
+- submit: () => Promise<void> - submit the form
+- reset: () => void - reset to initial state
+
+### Dependencies
+- useProjects - for optimistic updates to project list
+
+---
+
+## Component: [ComponentName]
+File: `[page-path]/components/[component-name].tsx`
+Props: `{ prop1: Type, prop2?: Type }`
+
+[Single sentence describing what this component renders]
+
+### [Primary Use Case]
+
+* Uses `use-[hook-name]` for [behavior]
+* Renders [UI elements]
+* Handles [user interactions]
+
+# Tasks
+
+* [ ] Backend implementation
+* [ ] Frontend components
+* [ ] Testing
+
+# Notes
+
+Additional implementation considerations
 ```
 
 ## Workflow for Creating Issues
@@ -54,162 +136,318 @@ Brief description.
 **Before writing the issue, analyze what already exists:**
 
 1. **Search for related files:**
-   - Check if agent/feature files exist (e.g., `agents/judge/judge.ts`)
-   - Look for existing tests (e.g., `agents/judge/tests/*.test.ts`)
+   - Check if behavior files exist (e.g., `app/client/projects/behaviors/create-project/`)
+   - Look for existing tests (e.g., `behaviors/*/tests/*.spec.ts`)
    - Review database schema (`db/schema.ts`)
 
 2. **Review existing code:**
    - Read any existing implementation files
-   - Check what's already implemented vs. what's missing
    - Note patterns and conventions used in the codebase
-   - Identify dependencies (e.g., which AI models, embedding dimensions)
+   - Identify dependencies
 
 3. **Align with current state:**
    - Match existing naming conventions
-   - Use same dependencies and libraries
-   - Follow established patterns (e.g., test structure, database types)
+   - Follow established patterns
    - Identify gaps between spec and current implementation
-
-**Example checks:**
-- If writing Judge issue, check: Dreamer implementation for AI model choices, embedding dimensions, test patterns
-- If related tables exist in schema, note their structure and relationships
-- Check environment configuration for API keys and database setup
 
 ### 2. Gather Context
 
 Determine:
-- **Issue ID**: Format `INF-X` where X is the issue number
-- **Feature**: What is being implemented
-- **Purpose**: One-line description
-- **File Path**: `docs/issues/[issue-id]-[kebab-case-title].md`
+- **Issue Title**: Clear description of the feature
+- **Behavior Name**: kebab-case name for the behavior
+- **Directory**: `app/[role]/[page]/behaviors/[behavior-name]/`
+- **File Path**: `docs/issues/[prefix]-[number]-[slug].md`
 
 If information is missing, ask the user before proceeding.
 
-### 3. Write Functional Specifications
+### 3. Write Functional Specification
 
-Define **what** the system should do behaviorally. Each scenario becomes a test case.
+Define **what** the system should do behaviorally.
 
-**Scenario format:**
+#### Behavior Structure
+
 ```markdown
-## [Action] [context/condition]
+## Behavior: [Name]
 
-### Preconditions
-table_name:
-column1, column2, column3
-value1, value2, value3
-
-(or for empty tables)
-table_name:
-(empty table)
-
-### Workflow
-* Call `className.methodName(args)`
-* [Step describing what happens]
-* Returns [object/value]
-
-### Postconditions
-table_name:
-column1, column2, column3
-existing_value1, existing_value2, new_value
+[One paragraph describing the behavior in user-facing terms.]
+Directory: `app/[role]/[page]/behaviors/[behavior-name]/`
 ```
+
+#### Rules (When/Then)
+
+Rules are **declarative constraints** with conditions and outcomes:
+
+```markdown
+### Rules
+
+#### Authentication Required
+- When:
+  - User is not authenticated
+- Then:
+  - Reject with "Unauthorized"
+
+#### Name Required
+- When:
+  - Project name is empty
+- Then:
+  - Reject with "Name is required"
+  - Form field "name" shows error
+
+#### Unique Name Per User
+- When:
+  - Project name already exists for user
+- Then:
+  - Reject with "Project name already exists"
+```
+
+**Rule guidelines:**
+- Each rule has a descriptive name
+- Multiple conditions under When are implicitly AND
+- For OR logic, create separate rules
+- Then describes observable outcomes
+
+#### Examples (Act/Check)
+
+Examples demonstrate how behavior plays out in concrete scenarios:
+
+```markdown
+### Examples
+
+#### User creates project successfully
+
+##### Preconditions
+users:
+id, email, role, status
+1, user@example.com, client, active
+
+projects:
+id, user_id, name, status
+1, 1, Existing Project, active
+
+##### Steps
+* Act: User logs in as "client"
+* Act: User navigates to the projects page
+* Act: User submits the create project form with name "New Project"
+* Check: New project appears in the list
+* Check: Project status is "draft"
+
+##### Postconditions
+projects:
+id, user_id, name, status
+1, 1, Existing Project, active
+2, 1, New Project, draft
+```
+
+**Step keywords:**
+- `Act:` - User or system performs an action (changes state)
+- `Check:` - Verification that something is true (asserts state)
 
 **Key points:**
 - Use CSV-like format for database tables (headers, then data rows)
-- Use placeholders: `<uuid>`, `<timestamp>`, `<vector>`, `<1536-dim vector>`
-- First workflow bullet specifies the method call
-- Workflow describes behavior, not implementation
+- Use placeholders: `<uuid>`, `<timestamp>`, `<vector>`
 - Postconditions include both pre-existing and new rows
-- **Keep it simple**: Start with 2-3 essential scenarios, not more
+- **Keep it simple**: 2-3 examples maximum (primary use case + key edge cases)
 
-**Essential scenario patterns (pick 2-3):**
-1. **Primary use case** - The main, expected scenario (this is usually NOT the empty database case)
-2. **One key edge case** - The most important boundary condition, error case, or alternative path
-3. **Optional second edge case** - Only if absolutely critical (e.g., empty state if it behaves differently)
+### 4. Write Technical Specification
 
-**Avoid over-specification:**
-- Don't create scenarios for every possible edge case
-- Focus on the primary behavior path and the most important edge case
-- Empty database is often an edge case, not the main use case
-- More scenarios = more work without proportional value
+Define **how** to implement the feature. Each unit type has its own format.
 
-### 4. Write Technical Specifications
+#### Function Specification (for Actions)
 
-Define **how** to implement the feature.
+Actions use the **Function specification format** with optional examples for state changes:
 
-**Include:**
+```markdown
+## functionName(input: InputType): ReturnType
 
-**Database Schema** (if needed):
-```typescript
-export const tableName = sqliteTable('table_name', {
-  id: text('id').primaryKey(),
-  field: text('field').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-});
+[Short description of what the function does]
 
-export type InsertTableName = typeof tableName.$inferInsert;
-export type SelectTableName = typeof tableName.$inferSelect;
+- Given: [input parameters and assumptions]
+- Returns: [value or outcome returned]
+- Calls: [direct dependencies - models, integrations]
+
+### Example: [Scenario name]
+
+#### Preconditions
+[table_name]:
+column1, column2, column3
+value1, value2, value3
+
+#### Postconditions
+[table_name]:
+column1, column2, column3
+value1, value2, value3
+new_id, new_val, new_val
 ```
 
-**Class Structure**:
-```typescript
-export class ClassName {
-  constructor(
-    private readonly db: Database,
-    // other dependencies
-  ) {}
+**Example:**
+```markdown
+## createProject(input: CreateProjectInput): Promise<Project>
 
-  async mainMethod(): Promise<ReturnType> {
-    // 1. [Step description]
-    // 2. [Step description]
-    return result;
-  }
+Creates a new project for the authenticated user.
 
-  private async helperMethod(): Promise<Type> {
-    // [Purpose]
-  }
-}
+- Given: project name and authenticated user with "client" role
+- Returns: the newly created project
+- Calls: ProjectModel.findByNameAndUser, ProjectModel.create
+
+### Example: Create project successfully
+
+#### Preconditions
+users:
+id, email, role
+1, user@example.com, client
+
+projects:
+id, user_id, name, status
+1, 1, Existing Project, active
+
+#### Postconditions
+projects:
+id, user_id, name, status, created_at
+1, 1, Existing Project, active, <timestamp>
+2, 1, New Project, draft, <timestamp>
+
+### Example: Reject duplicate name
+
+#### Preconditions
+projects:
+id, user_id, name
+1, 1, My Project
+
+#### Postconditions
+(no changes - operation rejected)
 ```
 
-**Additional details** (as needed):
-- LLM prompts (if using AI models)
-- Algorithms or complex logic
-- External integrations
-- Configuration requirements
+**Guidelines:**
+- Signature as heading: `## functionName(input: Type): ReturnType`
+- Description is one sentence
+- Given describes input parameters and assumptions
+- Returns describes the return value
+- Calls lists direct dependencies (optional)
+- Examples show database state transitions (for functions that modify state)
+- Use placeholders: `<uuid>`, `<timestamp>` for generated values
+
+#### Hook Specification
+
+Hooks use structured sections for parameters, state, returns, and dependencies:
+
+```markdown
+## useHookName(params?: ParamType)
+
+[Short description of what stateful logic this hook encapsulates]
+
+### Parameters
+- paramName: Type - description
+
+### State
+- stateName: Type
+- anotherState: Type
+
+### Returns
+- value: Type - description
+- action: () => void - description
+
+### Dependencies
+- useOtherHook - why it's needed
+```
+
+**Example:**
+```markdown
+## useCreateProject(options?: Options)
+
+Manages form state and submission logic for creating a new project.
+
+### Parameters
+- options.onSuccess: (project: Project) => void - callback after successful creation
+
+### State
+- name: string
+- errors: ValidationErrors
+- isPending: boolean
+
+### Returns
+- name: string - current name value
+- errors: ValidationErrors - field-level errors
+- isPending: boolean - submission in progress
+- setName: (value: string) => void - update name field
+- submit: () => Promise<void> - submit the form
+- reset: () => void - reset to initial state
+
+### Dependencies
+- useProjects - for optimistic updates to project list
+```
+
+**Guidelines:**
+- Use hook signature as the heading
+- Parameters section lists what the hook accepts
+- State section lists internal state it manages
+- Returns section lists all exposed values and functions
+- Dependencies section lists other hooks it calls (optional)
+
+#### Component Specification
+
+```markdown
+## Component: [ComponentName]
+File: `[page-path]/components/[component-name].tsx`
+Props: `{ prop1: Type, prop2?: Type }`
+
+[Single sentence describing what this component renders and its purpose]
+
+### [Primary Use Case]
+
+* Uses `use-[hook-name]` for [behavior]
+* Renders [UI elements]
+* Handles [user interactions]
+```
+
+#### Service Specification
+
+```markdown
+## Service: [ServiceName]
+File: `shared/services/[service-name]/[service-name].service.ts`
+
+[Single sentence describing what external system this integrates with]
+
+### [Primary Use Case]
+
+* Integrates with [external API/service]
+* Handles [authentication/rate limiting/retries]
+* Transforms external data to internal format
+* Returns typed responses
+
+### [Error Handling]
+
+* Retries on network failures (max 3 attempts)
+* Throws typed errors for API failures
+```
 
 ### 5. Write Tasks
 
-Break down implementation into trackable tasks using markdown checkboxes.
+Break down implementation into trackable tasks:
 
-**Structure:**
 ```markdown
-## Tasks
+# Tasks
 
-- [ ] High-level category 1
-  - [ ] Specific task 1.1
-  - [ ] Specific task 1.2
-- [ ] High-level category 2
-  - [ ] Specific task 2.1
+* [ ] Backend implementation
+  * [ ] Create action file with validation
+  * [ ] Add model methods if needed
+* [ ] Frontend components
+  * [ ] Create hook with optimistic updates
+  * [ ] Create/update component
+* [ ] Testing
+  * [ ] Write behavior tests for examples
+  * [ ] Write action tests
 ```
-
-**Typical task order:**
-1. Schema/Database (create tables, migrations)
-2. Core Implementation (class, methods)
-3. Integrations (LLM, APIs)
-4. Tests (behavioral tests for all scenarios)
 
 **Task guidelines:**
 - Make tasks specific and actionable
 - Use verbs: Create, Implement, Add, Set up
-- Include method names or file names
 - Order by dependency
-- Each scenario should have a corresponding test task
+- Each example should have a corresponding test task
 
 ### 6. Create or Update File
 
 **For new issues:**
-Use Write tool with path `docs/issues/[issue-id]-[kebab-case-title].md`
+Use Write tool with path `docs/issues/[prefix]-[number]-[slug].md`
 
 **For updating existing issues:**
 1. Read the existing file first
@@ -218,23 +456,24 @@ Use Write tool with path `docs/issues/[issue-id]-[kebab-case-title].md`
 ### 7. Validate
 
 Check:
-- [ ] **2-3 scenarios maximum** covering primary use case + key edge cases
-- [ ] Each scenario has Preconditions/Workflow/Postconditions
-- [ ] Placeholders used for generated values
-- [ ] Database schema included if needed
-- [ ] Class structure shows main methods
+- [ ] Behavior has clear Rules with When/Then format
+- [ ] 2-3 Examples maximum covering primary use case + key edge cases
+- [ ] Each Example has Preconditions/Steps/Postconditions
+- [ ] Steps use Act: and Check: prefixes
+- [ ] Technical specs follow Action/Hook/Component/Service formats
 - [ ] Tasks are specific and ordered by dependency
-- [ ] Each scenario has a test task
 
 ## Usage with Other Skills
 
 **write-unit-test skill:**
-Functional Specifications can be directly used with write-unit-test to generate behavioral tests. The Preconditions/Workflow/Postconditions format maps to PreDB/Execute/PostDB pattern.
+Examples can be directly used with write-unit-test to generate behavioral tests. The Preconditions/Steps/Postconditions format maps to PreDB/Execute/PostDB pattern.
 
 ## Reference
 
-See `references/issue-example.md` for a complete example showing:
-- Multiple scenarios with different precondition states
-- Proper use of placeholders
-- Technical specifications with schema, class structure, and LLM prompts
-- Hierarchical task breakdown
+See `docs/templates/issue.md` for the complete issue template.
+See `docs/Epic.md` for the full Epic specification format documentation.
+
+### Examples
+
+- `references/implement-issue.md` - Example of implementing a new behavior from scratch (new feature with database changes)
+- `references/change-issue.md` - Example of changing existing behaviors (refactoring, moving code, updating modules)
