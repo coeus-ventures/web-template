@@ -71,7 +71,7 @@ id, user_id, description
 
 ```typescript
 import { expect, test } from '@playwright/test';
-import { PreDB } from '@/lib/behave-test/';
+import { PreDB } from '@/lib/db-test';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 
@@ -137,7 +137,7 @@ test.describe('Create Project Behavior', () => {
 
 ```typescript
 import { expect, test } from '@playwright/test';
-import { PreDB } from '@/lib/behave-test/';
+import { PreDB } from '@/lib/db-test';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { getTestUser } from '@/shared/tests/helpers';

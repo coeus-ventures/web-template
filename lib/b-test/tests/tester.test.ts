@@ -15,7 +15,7 @@ import {
   type Page,
 } from 'playwright';
 import { JSDOM } from 'jsdom';
-import { Tester, TesterError } from '../tester';
+import { Tester, TesterError } from '@/lib/b-test';
 
 // Mock only the AI SDK to avoid API calls
 vi.mock('ai', () => ({

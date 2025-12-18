@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { sql, eq } from "drizzle-orm";
-import { PreDB } from "@/lib/b-test/predb";
-import { PostDB } from "@/lib/b-test/postdb";
+import { PreDB } from "@/lib/db-test/predb";
+import { PostDB } from "@/lib/db-test/postdb";
 import { db } from "@/db";
 import { authTokens, magicLinks } from "@/db/schema";
 import { TokenService } from "../token.service";

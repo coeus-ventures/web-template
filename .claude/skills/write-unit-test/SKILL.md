@@ -60,7 +60,7 @@ Create test file at `[module]/tests/[class-name].test.ts`:
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PreDB, PostDB } from '@/lib/b-test';
+import { PreDB, PostDB } from '@/lib/db-test';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { ClassName } from '@/path/to/class';

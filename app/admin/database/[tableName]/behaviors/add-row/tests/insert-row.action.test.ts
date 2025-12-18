@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { PreDB } from "@/lib/b-test";
+import { PreDB } from "@/lib/db-test";
 import { insertRow } from "../insert-row.action";
 
 describe("insertRow action", () => {

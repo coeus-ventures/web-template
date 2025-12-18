@@ -28,7 +28,7 @@ Each agent is an expert in their domain and follows the project's two-layer arch
 
 Here is the order of steps to execute the issue: 
 
-1. Create or Update Services (if necessary)
+1. Create or Update Integrations (if necessary)
 2. Create or Update State (Jotai Atoms)
 3. Create or Update Actions
 4. Create or Update Hooks
