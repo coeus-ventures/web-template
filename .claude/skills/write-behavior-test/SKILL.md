@@ -23,7 +23,7 @@ Spec Test (.spec.ts)
 Behavior tests:
 - Run in browser via Playwright
 - Verify complete user workflows end-to-end
-- Use PreDB to set up database state (Preconditions)
+- Use PreDB to set up database state (PreDB)
 - Use Playwright for user interactions (Act: steps)
 - Use UI assertions for verifications (Check: steps)
 - Verify outcomes through UI, not database queries
@@ -45,7 +45,7 @@ app/[role]/[page]/behaviors/[behavior-name]/
 
 ### User creates project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role
 1, user@example.com, client
@@ -61,7 +61,7 @@ projects:
 * Act: User clicks "Start Building" button
 * Check: User is redirected to the project page
 
-#### Postconditions
+#### PostDB
 projects:
 id, user_id, description
 <uuid>, 1, Create a CRM
@@ -77,7 +77,7 @@ import * as schema from '@/db/schema';
 
 test.describe('Create Project Behavior', () => {
   test('User creates project successfully', async ({ page }) => {
-    // Preconditions
+    // PreDB
     await PreDB(db, schema, {
       projects: [],
     });
@@ -151,7 +151,7 @@ test.describe('[Behavior Name] Behavior', () => {
     // Get test user if needed
     const testUser = await getTestUser();
 
-    // Preconditions - translate CSV tables to PreDB
+    // PreDB - translate CSV tables to PreDB
     await PreDB(db, schema, {
       projects: [
         {
@@ -183,7 +183,7 @@ test.describe('[Behavior Name] Behavior', () => {
 
 ## PreDB Usage
 
-### Set Up Initial State (Preconditions)
+### Set Up Initial State (PreDB)
 
 ```typescript
 await PreDB(db, schema, {
@@ -237,7 +237,7 @@ await PreDB(db, schema, {
 });
 ```
 
-## Verifying Postconditions Through UI
+## Verifying PostDB Through UI
 
 Instead of using PostDB, verify outcomes through the UI:
 
@@ -319,10 +319,10 @@ await page.waitForTimeout(2000);
 
 Before finalizing a behavior test:
 - [ ] Test file in correct location: `behaviors/[name]/tests/[name].spec.ts`
-- [ ] Preconditions translated to PreDB call
+- [ ] PreDB translated to PreDB call
 - [ ] All Act: steps translated to Playwright actions
 - [ ] All Check: steps translated to UI assertions
-- [ ] Postconditions verified through UI (not PostDB)
+- [ ] PostDB verified through UI (not PostDB)
 - [ ] Appropriate timeouts set
 - [ ] Cleanup in afterEach if needed
 - [ ] Uses data-testid or semantic locators
@@ -334,7 +334,7 @@ Before finalizing a behavior test:
 ```markdown
 ### User deletes project successfully
 
-#### Preconditions
+#### PreDB
 projects:
 id, name, user_id, status
 proj-1, Test Project, user-1, active
@@ -346,7 +346,7 @@ proj-1, Test Project, user-1, active
 * Check: Project card is removed from UI
 * Check: Success toast is shown
 
-#### Postconditions
+#### PostDB
 projects:
 (empty)
 ```
@@ -357,7 +357,7 @@ projects:
 test('User deletes project successfully', async ({ page }) => {
   const testUser = await getTestUser();
 
-  // Preconditions
+  // PreDB
   await PreDB(db, schema, {
     projects: [
       {

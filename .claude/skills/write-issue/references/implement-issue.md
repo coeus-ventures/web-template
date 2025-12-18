@@ -51,7 +51,7 @@ Directory: `app/client/projects/behaviors/create-project/`
 
 #### User creates a new project successfully
 
-##### Preconditions
+##### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -70,7 +70,7 @@ id, user_id, name, status, created_at
 * Check: New project "New Project" appears in the list
 * Check: Project status shows "draft"
 
-##### Postconditions
+##### PostDB
 projects:
 id, user_id, name, status, created_at
 1, 1, Existing Project, active, <timestamp>
@@ -80,7 +80,7 @@ id, user_id, name, status, created_at
 
 #### User tries to create project with duplicate name
 
-##### Preconditions
+##### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -98,7 +98,7 @@ id, user_id, name, status
 * Check: Error "Project name already exists" is shown on name field
 * Check: No new project is created
 
-##### Postconditions
+##### PostDB
 projects:
 id, user_id, name, status
 1, 1, Existing Project, active
@@ -117,7 +117,7 @@ Creates a new project for the authenticated user after validating the input.
 
 ### Example: Create project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -126,7 +126,7 @@ projects:
 id, user_id, name, status
 1, 1, Existing Project, active
 
-#### Postconditions
+#### PostDB
 projects:
 id, user_id, name, status, created_at
 1, 1, Existing Project, active, <timestamp>
@@ -134,7 +134,7 @@ id, user_id, name, status, created_at
 
 ### Example: Reject duplicate name
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -143,7 +143,7 @@ projects:
 id, user_id, name, status
 1, 1, Existing Project, active
 
-#### Postconditions
+#### PostDB
 (no changes - operation rejected with "Project name already exists")
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: write-unit-test
-description: Generate behavioral unit tests from functional specifications using PreDB/PostDB pattern. Use when user provides specs with Preconditions/Workflow/Postconditions structure or asks to write tests for a specification before implementation (TDD approach).
+description: Generate behavioral unit tests from functional specifications using PreDB/PostDB pattern. Use when user provides specs with PreDB/Workflow/PostDB structure or asks to write tests for a specification before implementation (TDD approach).
 ---
 
 # Write Unit Test
@@ -12,7 +12,7 @@ Convert functional specifications into executable test code. Tests define the be
 ## When to Use
 
 This skill should be used when:
-- User provides functional specifications with Preconditions/Workflow/Postconditions structure
+- User provides functional specifications with PreDB/Workflow/PostDB structure
 - User requests to "write tests" or "implement tests" for a spec
 - Starting TDD workflow (tests first, implementation later)
 - User says "create tests for this spec"
@@ -21,7 +21,7 @@ This skill should be used when:
 
 Specs follow a three-part structure for each scenario:
 
-**Preconditions**: Initial database state (CSV-like format)
+**PreDB**: Initial database state (CSV-like format)
 ```
 table_name:
 column1, column2, column3
@@ -35,7 +35,7 @@ value1, value2, value3
 * Returns [object type]
 ```
 
-**Postconditions**: Expected database state after execution (includes pre-existing + new rows)
+**PostDB**: Expected database state after execution (includes pre-existing + new rows)
 ```
 table_name:
 column1, column2, column3, column4
@@ -50,9 +50,9 @@ Use placeholders for runtime-generated values: `<uuid>`, `<timestamp>`, `<vector
 
 For each scenario in the spec:
 - Extract test name from scenario title (convert to "should [action] when [condition]" format)
-- Identify all tables and their initial states from Preconditions
+- Identify all tables and their initial states from PreDB
 - Extract the method call from the first Workflow bullet
-- Identify expected return values and database state from Postconditions
+- Identify expected return values and database state from PostDB
 
 ### 2. Generate Test File Structure
 
@@ -92,7 +92,7 @@ describe('ClassName', () => {
 
 ### 3. Translation Rules
 
-**Preconditions → PreDB**:
+**PreDB → PreDB**:
 - Empty tables: `table: []`
 - With data: Map CSV rows to objects with proper types
 - Timestamps: Use `const now = new Date()`
@@ -103,7 +103,7 @@ describe('ClassName', () => {
 - Only call the public method, not internal implementation details
 - Add comment describing what the method does conceptually
 
-**Postconditions → Assertions + PostDB**:
+**PostDB → Assertions + PostDB**:
 - Derive assertions from expected values (types, ranges, specific values)
 - Use `allowExtraRows: true` when pre-existing rows exist
 - Only verify the new/changed data, reference actual result values
@@ -146,7 +146,7 @@ For detailed translation rules, complete examples, and common patterns, refer to
 ## Required Context
 
 Before generating tests, ensure access to:
-1. The functional specification (Preconditions/Workflow/Postconditions)
+1. The functional specification (PreDB/Workflow/PostDB)
 2. The class/module name and import path
 3. The database schema location (`db/schema.ts`)
 4. Knowledge of which tables are involved

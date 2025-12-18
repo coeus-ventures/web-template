@@ -232,9 +232,9 @@ A behavior specification consists of:
 5. An **Examples** section - concrete scenarios demonstrating the behavior
 
 Each example may include:
-- **Preconditions** (optional) - system state before the behavior
+- **PreDB** (optional) - system state before the behavior
 - **Steps** (required) - actions and verifications
-- **Postconditions** (optional) - system state after the behavior
+- **PostDB** (optional) - system state after the behavior
 
 ### Step Keywords
 
@@ -290,7 +290,7 @@ Directory: `pages/projects/behaviors/create-project/`
 
 ### User creates a new project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -306,7 +306,7 @@ id, user_id, name, status
 * Check: New project appears in the list
 * Check: Project status is "draft"
 
-#### Postconditions
+#### PostDB
 projects:
 id, user_id, name, status
 1, 1, Test Project, active
@@ -314,7 +314,7 @@ id, user_id, name, status
 
 ### User tries to create project with duplicate name
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -351,7 +351,7 @@ A function specification consists of:
 1. A heading whose title is the **function signature**
 2. A short description
 3. A small set of keywords
-4. Optional **Examples** with Preconditions/Postconditions (for functions that modify state)
+4. Optional **Examples** with PreDB/PostDB (for functions that modify state)
 
 ### Keywords
 
@@ -363,8 +363,12 @@ A function specification consists of:
 
 For functions that modify database state (like server actions), include examples showing state transitions:
 
-- **Preconditions** - database state before execution (CSV format)
-- **Postconditions** - database state after execution (CSV format)
+- **PreDB** - database state before execution (CSV format)
+- **Steps** - function call and expected result using keywords:
+  - `Call:` - invoke the function with specific inputs
+  - `Returns:` - expected return value
+  - `Throws:` - expected error (for error cases)
+- **PostDB** - database state after execution (CSV format)
 
 ### Example (Simple Function)
 
@@ -390,7 +394,7 @@ Creates a new project for the authenticated user.
 
 ### Example: Create project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role
 1, user@example.com, client
@@ -399,21 +403,31 @@ projects:
 id, user_id, name, status
 1, 1, Existing Project, active
 
-#### Postconditions
+#### Steps
+* Call: createProject({ name: "New Project" }) as user 1
+* Returns: { id: 2, name: "New Project", status: "draft", userId: 1 }
+
+#### PostDB
 projects:
-id, user_id, name, status, created_at
-1, 1, Existing Project, active, <timestamp>
-2, 1, New Project, draft, <timestamp>
+id, user_id, name, status
+1, 1, Existing Project, active
+2, 1, New Project, draft
 
 ### Example: Reject duplicate name
 
-#### Preconditions
+#### PreDB
 projects:
 id, user_id, name
 1, 1, My Project
 
-#### Postconditions
-(no changes - operation rejected)
+#### Steps
+* Call: createProject({ name: "My Project" }) as user 1
+* Throws: "Project name already exists"
+
+#### PostDB
+projects:
+id, user_id, name
+1, 1, My Project
 ```
 
 ---
@@ -515,54 +529,85 @@ Renders the form used to create a new project.
 
 ## 8. Hook Specification Format
 
-Hook specifications describe **reusable stateful logic** that encapsulates behavior outside of components.
+Hook specifications describe the **entry point of a behavior** - the bridge between UI components and server actions.
 
 ### Purpose
 
 Hook specifications answer:
-- What stateful logic does this hook encapsulate?
-- What parameters does it accept?
-- What state does it manage internally?
-- What does it return?
+- What behavior does this hook trigger?
+- What is the handler function signature?
+- What state does it manage?
+- What does it return to components?
+
+### Key Principle
+
+**One behavior = One hook = One handler**
+
+Each behavior has exactly one hook that serves as its entry point. The hook exports a single handler function prefixed with `handle` (e.g., `handleCreateProject`, `handleDeleteTask`). This handler is the trigger that initiates the behavior.
 
 ### Structure
 
 A hook specification consists of:
 1. A heading with the **hook signature**
-2. A short description
-3. **Parameters** it accepts
-4. **State** it manages
-5. **Returns** - the values and functions it exposes
-6. Optional **dependencies** (other hooks it calls)
+2. A short description referencing the behavior
+3. **Parameters** it accepts (optional)
+4. **State** it manages internally
+5. **Returns** - always includes `handle[Behavior]`, `isLoading`, and `error`
+6. Optional **Dependencies** (other hooks it calls)
+7. **Examples** - test scenarios for the handler using `PreState`/`Steps`/`PostState` (state changes, not database)
 
 ### Example
 
 ```markdown
-# useProjectForm(initialData?: ProjectInput)
+# useCreateProject()
 
-Manages form state and submission logic for creating or editing a project.
-
-## Parameters
-- initialData: ProjectInput (optional) - pre-populate form for editing
+Entry point for the Create Project behavior. Validates input, performs optimistic updates, and calls the server action.
 
 ## State
-- formData: ProjectInput
-- errors: ValidationErrors
-- isSubmitting: boolean
-- isValid: boolean
+- isLoading: boolean
+- error: string | null
 
 ## Returns
-- formData: ProjectInput - current form values
-- errors: ValidationErrors - field-level errors
-- isSubmitting: boolean - submission in progress
-- isValid: boolean - form passes validation
-- setField: (field: string, value: any) => void - update a field
-- submit: () => Promise<ProjectId> - submit the form
-- reset: () => void - reset to initial state
+- handleCreateProject: (name: string) => Promise<void> - triggers the behavior
+- isLoading: boolean - submission in progress
+- error: string | null - current error message
 
 ## Dependencies
-- useAuth - for current user context
-- useValidation - for form validation
+- useSetAtom(projectsAtom) - for optimistic updates
+
+## Examples
+
+### Example: Create project successfully
+
+#### PreState
+projectsAtom: []
+isLoading: false
+error: null
+
+#### Steps
+* Call: handleCreateProject("New Project")
+* Returns: void
+
+#### PostState
+projectsAtom: [{ id: 1, name: "New Project", status: "draft", pending: false }]
+isLoading: false
+error: null
+
+### Example: Reject empty name
+
+#### PreState
+projectsAtom: []
+isLoading: false
+error: null
+
+#### Steps
+* Call: handleCreateProject("")
+* Throws: "Name is required"
+
+#### PostState
+projectsAtom: []
+isLoading: false
+error: "Name is required"
 ```
 
 ---

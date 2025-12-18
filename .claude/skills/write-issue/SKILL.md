@@ -35,7 +35,7 @@ Directory: `app/[role]/[page]/behaviors/[behavior-name]/`
 
 #### [Primary Use Case]
 
-##### Preconditions
+##### PreDB
 [table-name]:
 col_a, col_b, col_c
 1, foo, bar
@@ -46,7 +46,7 @@ col_a, col_b, col_c
 * Check: [Observable result in UI / API response]
 * Check: [Observable result in database]
 
-##### Postconditions
+##### PostDB
 [table-name]:
 col_a, col_b, col_c
 1, foo, bar
@@ -64,7 +64,7 @@ Creates a new project for the authenticated user.
 
 ### Example: Create project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role
 1, user@example.com, client
@@ -73,7 +73,7 @@ projects:
 id, user_id, name, status
 1, 1, Existing Project, active
 
-#### Postconditions
+#### PostDB
 projects:
 id, user_id, name, status, created_at
 1, 1, Existing Project, active, <timestamp>
@@ -215,7 +215,7 @@ Examples demonstrate how behavior plays out in concrete scenarios:
 
 #### User creates project successfully
 
-##### Preconditions
+##### PreDB
 users:
 id, email, role, status
 1, user@example.com, client, active
@@ -231,7 +231,7 @@ id, user_id, name, status
 * Check: New project appears in the list
 * Check: Project status is "draft"
 
-##### Postconditions
+##### PostDB
 projects:
 id, user_id, name, status
 1, 1, Existing Project, active
@@ -245,7 +245,7 @@ id, user_id, name, status
 **Key points:**
 - Use CSV-like format for database tables (headers, then data rows)
 - Use placeholders: `<uuid>`, `<timestamp>`, `<vector>`
-- Postconditions include both pre-existing and new rows
+- PostDB include both pre-existing and new rows
 - **Keep it simple**: 2-3 examples maximum (primary use case + key edge cases)
 
 ### 4. Write Technical Specification
@@ -267,12 +267,12 @@ Actions use the **Function specification format** with optional examples for sta
 
 ### Example: [Scenario name]
 
-#### Preconditions
+#### PreDB
 [table_name]:
 column1, column2, column3
 value1, value2, value3
 
-#### Postconditions
+#### PostDB
 [table_name]:
 column1, column2, column3
 value1, value2, value3
@@ -291,7 +291,7 @@ Creates a new project for the authenticated user.
 
 ### Example: Create project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role
 1, user@example.com, client
@@ -300,7 +300,7 @@ projects:
 id, user_id, name, status
 1, 1, Existing Project, active
 
-#### Postconditions
+#### PostDB
 projects:
 id, user_id, name, status, created_at
 1, 1, Existing Project, active, <timestamp>
@@ -308,12 +308,12 @@ id, user_id, name, status, created_at
 
 ### Example: Reject duplicate name
 
-#### Preconditions
+#### PreDB
 projects:
 id, user_id, name
 1, 1, My Project
 
-#### Postconditions
+#### PostDB
 (no changes - operation rejected)
 ```
 
@@ -458,7 +458,7 @@ Use Write tool with path `docs/issues/[prefix]-[number]-[slug].md`
 Check:
 - [ ] Behavior has clear Rules with When/Then format
 - [ ] 2-3 Examples maximum covering primary use case + key edge cases
-- [ ] Each Example has Preconditions/Steps/Postconditions
+- [ ] Each Example has PreDB/Steps/PostDB
 - [ ] Steps use Act: and Check: prefixes
 - [ ] Technical specs follow Action/Hook/Component/Service formats
 - [ ] Tasks are specific and ordered by dependency
@@ -466,7 +466,7 @@ Check:
 ## Usage with Other Skills
 
 **write-unit-test skill:**
-Examples can be directly used with write-unit-test to generate behavioral tests. The Preconditions/Steps/Postconditions format maps to PreDB/Execute/PostDB pattern.
+Examples can be directly used with write-unit-test to generate behavioral tests. The PreDB/Steps/PostDB format maps to PreDB/Execute/PostDB pattern.
 
 ## Reference
 

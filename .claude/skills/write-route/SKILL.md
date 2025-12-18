@@ -54,13 +54,13 @@ Returns all projects for the authenticated user.
 
 ### Example: List user projects
 
-#### Preconditions
+#### PreDB
 projects:
 id, user_id, name
 1, 1, Project A
 2, 1, Project B
 
-#### Postconditions
+#### PostDB
 (no changes - read operation)
 
 Response: { success: true, data: [{ id: 1, name: "Project A" }, ...] }
@@ -256,14 +256,14 @@ Creates a new project for the authenticated user.
 
 ### Example: Create project successfully
 
-#### Preconditions
+#### PreDB
 projects:
 id, user_id, name
 (empty)
 
 Request: { name: "New Project" }
 
-#### Postconditions
+#### PostDB
 projects:
 id, user_id, name, created_at
 1, 1, New Project, <timestamp>

@@ -55,12 +55,12 @@ Follow the Epic Function specification format from `docs/Epic.md`:
 
 ### Example: [Scenario name]
 
-#### Preconditions
+#### PreDB
 [table_name]:
 column1, column2
 value1, value2
 
-#### Postconditions
+#### PostDB
 [table_name]:
 column1, column2
 value1, value2
@@ -182,7 +182,7 @@ Creates a new project for the authenticated user.
 
 ### Example: Create project successfully
 
-#### Preconditions
+#### PreDB
 users:
 id, email, role
 1, user@example.com, client
@@ -191,19 +191,81 @@ projects:
 id, user_id, name, status
 1, 1, Existing Project, active
 
-#### Postconditions
+#### Steps
+* Call: createProject({ name: "New Project" }) as user 1
+* Returns: { id: 2, name: "New Project", status: "draft" }
+
+#### PostDB
 projects:
-id, user_id, name, status, created_at
-1, 1, Existing Project, active, <timestamp>
-2, 1, New Project, draft, <timestamp>
+id, user_id, name, status
+1, 1, Existing Project, active
+2, 1, New Project, draft
 
 ### Example: Reject duplicate name
 
-#### Preconditions
+#### PreDB
 projects:
 id, user_id, name
 1, 1, My Project
 
-#### Postconditions
-(no changes - operation rejected with "Project name already exists")
+#### Steps
+* Call: createProject({ name: "My Project" }) as user 1
+* Throws: "Project name already exists"
+
+#### PostDB
+projects:
+id, user_id, name
+1, 1, My Project
 ```
+
+## Test Generation
+
+Generate test files at `[behavior-path]/tests/[action-name].action.test.ts`.
+
+### Test Structure
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { PreDB, PostDB } from '@/lib/db-test';
+import { db } from '@/db';
+import * as schema from '@/db/schema';
+import { actionName } from '../[action-name].action';
+
+describe('actionName', () => {
+  it('should [behavior] when [condition]', async () => {
+    // PreDB -> PreDB
+    await PreDB(db, schema, {
+      users: [{ id: '1', email: 'user@example.com' }],
+      projects: [],
+    });
+
+    // Steps -> Execute
+    const result = await actionName({ name: 'New Project' });
+
+    // Returns -> Assertions
+    expect(result.success).toBe(true);
+    expect(result.data?.name).toBe('New Project');
+
+    // PostDB -> PostDB
+    await PostDB(db, schema, {
+      projects: [{ id: result.data?.id, name: 'New Project', status: 'draft' }],
+    }, { allowExtraRows: true });
+  });
+});
+```
+
+### Translation Rules
+
+| Spec | Test |
+|------|------|
+| PreDB (CSV) | `PreDB(db, schema, { table: [...] })` |
+| `Call:` | Action invocation |
+| `Returns:` | `expect(result).toBe(...)` |
+| `Throws:` | `expect(result.error).toBe(...)` |
+| PostDB (CSV) | `PostDB(db, schema, { table: [...] })` |
+
+### Principles
+
+- Test behavior, not implementation
+- Use real database (no mocks)
+- Start with ONE test (happy path)

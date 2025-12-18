@@ -23,7 +23,7 @@ Directory: `app/[role]/[page]/behaviors/[behavior-name]/`
 
 ### [Scenario Name]
 
-#### Preconditions
+#### PreDB
 [table-name]:
 col_a, col_b, col_c
 1, foo, bar
@@ -38,7 +38,7 @@ col_a, col_b
 * Check: [Observable result in UI / API response]
 * Check: [Observable result in database / derived state]
 
-#### Postconditions
+#### PostDB
 [table-name]:
 col_a, col_b, col_c
 1, foo, bar
@@ -46,7 +46,7 @@ col_a, col_b, col_c
 
 ### [Scenario Name — Edge Case]
 
-#### Preconditions
+#### PreDB
 [Optional CSV tables as needed]
 
 #### Steps

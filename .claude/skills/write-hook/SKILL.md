@@ -176,27 +176,113 @@ export function useBehaviorName() {
 ## Example Specification
 
 ```markdown
-## useCreateProject(options?: CreateProjectOptions)
+## useCreateProject()
 
-Manages form state and submission for creating a new project.
-
-### Parameters
-- options.onSuccess: (project: Project) => void - callback after creation
+Entry point for the Create Project behavior. Validates input, performs optimistic updates, and calls the server action.
 
 ### State
-- name: string
-- errors: ValidationErrors
-- isPending: boolean
+- isLoading: boolean
+- error: string | null
 
 ### Returns
-- name: string - current name value
-- errors: ValidationErrors - field-level errors
-- isPending: boolean - submission in progress
-- setName: (value: string) => void - update name field
-- submit: () => Promise<void> - validate and submit
-- reset: () => void - clear form
+- handleCreateProject: (name: string) => Promise<void> - triggers the behavior
+- isLoading: boolean - submission in progress
+- error: string | null - current error message
 
 ### Dependencies
-- useProjects - for optimistic updates to project list
-- useToast - for success/error notifications
+- useSetAtom(projectsAtom) - for optimistic updates
+
+### Example: Create project successfully
+
+#### PreState
+projectsAtom: []
+isLoading: false
+error: null
+
+#### Steps
+* Call: handleCreateProject("New Project")
+* Returns: void
+
+#### PostState
+projectsAtom: [{ id: "1", name: "New Project", status: "draft", pending: false }]
+isLoading: false
+error: null
+
+### Example: Reject empty name
+
+#### PreState
+projectsAtom: []
+isLoading: false
+error: null
+
+#### Steps
+* Call: handleCreateProject("")
+* Throws: "Name is required"
+
+#### PostState
+projectsAtom: []
+isLoading: false
+error: "Name is required"
 ```
+
+## Test Generation
+
+Generate test files at `[behavior-path]/tests/use-[behavior-name].test.tsx`.
+
+### Test Structure
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { Provider } from 'jotai';
+import { useHydrateAtoms } from 'jotai/utils';
+import { useBehaviorName } from '../use-[behavior-name]';
+import { itemsAtom } from '@/app/[role]/[page]/state';
+
+// Helper to set initial atom state
+function TestProvider({ initialValues, children }) {
+  return (
+    <Provider>
+      <HydrateAtoms initialValues={initialValues}>{children}</HydrateAtoms>
+    </Provider>
+  );
+}
+
+describe('useBehaviorName', () => {
+  it('should [behavior] when [condition]', async () => {
+    // PreState -> Initial atom values
+    const wrapper = ({ children }) => (
+      <TestProvider initialValues={[[itemsAtom, []]]}>
+        {children}
+      </TestProvider>
+    );
+
+    const { result } = renderHook(() => useBehaviorName(), { wrapper });
+
+    // Steps -> Execute handler
+    await act(async () => {
+      await result.current.handleAction({ name: 'New Item' });
+    });
+
+    // PostState -> Verify state changes
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+});
+```
+
+### Translation Rules
+
+| Spec | Test |
+|------|------|
+| PreState (atoms) | Initial atom values in TestProvider |
+| `Call:` | `await result.current.handler(...)` |
+| `Returns:` | Verify handler completes |
+| `Throws:` | `expect(result.current.error).toBe(...)` |
+| PostState (atoms) | `expect(result.current.state).toBe(...)` |
+
+### Principles
+
+- Test state transitions, not database
+- Mock server actions if needed (hooks don't touch DB directly)
+- Start with ONE test (happy path)
