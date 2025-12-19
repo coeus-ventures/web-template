@@ -15,16 +15,32 @@ This skill creates React hooks that follow the Epic three-layer architecture. Ho
 Frontend (Browser): Components -> Hooks -> State (Jotai)
                           |
                           v
-Backend (Server): Actions
+Backend (Server): Actions (atomic) OR Routes (streaming)
 ```
 
 Hooks:
 - Run in the browser (Frontend layer)
 - Manage state with Jotai atoms
 - Validate inputs with Zod
-- Call server actions
+- Call ONE backend entry point (Action or Route, never both)
 - Handle optimistic updates and rollback
 - NEVER access database or import server-only code
+
+### Backend Entry Point Rule
+
+Each hook calls exactly ONE backend entry point:
+
+**Action** (default):
+- Import and call directly
+- Most behaviors
+- Simpler mental model
+
+**Route**:
+- Call via `fetch` or `fetchEventSource`
+- Streaming/SSE, webhooks, HTTP semantics needed
+- Supports both request/response and streaming
+
+Never call both. Never call multiple endpoints.
 
 ## Hook Location and Naming
 
@@ -135,6 +151,120 @@ export function useBehaviorName() {
 }
 ```
 
+## Route Consumption Patterns
+
+### Non-Streaming Route
+
+```typescript
+import { useAtom } from 'jotai';
+import { useState } from 'react';
+
+export function useRouteBehavior() {
+  const [result, setResult] = useAtom(resultAtom);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (input: Input) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/page/behaviors/behavior-name`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setResult(data.data);
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      setError('Request failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { result, isLoading, error, handleSubmit };
+}
+```
+
+### Streaming Route (SSE)
+
+```typescript
+import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { useAtom } from 'jotai';
+import { useState, useRef } from 'react';
+
+export function useStreamingBehavior() {
+  const [result, setResult] = useAtom(resultAtom);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleGenerate = async (input: Input) => {
+    setIsLoading(true);
+    setError(null);
+    setResult('');
+
+    abortControllerRef.current = new AbortController();
+
+    await fetchEventSource(`/page/behaviors/behavior-name`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+      signal: abortControllerRef.current.signal,
+
+      onmessage(event) {
+        switch (event.event) {
+          case 'token':
+            setResult(prev => prev + event.data);
+            break;
+          case 'complete':
+            setIsLoading(false);
+            break;
+          case 'error':
+            setError(event.data);
+            setIsLoading(false);
+            break;
+        }
+      },
+
+      onclose() {
+        setIsLoading(false);
+      },
+
+      onerror(err) {
+        setError('Connection failed');
+        setIsLoading(false);
+      },
+    });
+  };
+
+  const handleCancel = () => {
+    abortControllerRef.current?.abort();
+    setIsLoading(false);
+  };
+
+  return { result, isLoading, error, handleGenerate, handleCancel };
+}
+```
+
+### Key Differences
+
+| Aspect | Action | Route | Streaming Route |
+|--------|--------|-------|-----------------|
+| Import | Action function | `fetch` | `fetchEventSource` |
+| Call | `await action(input)` | `await fetch(url)` | `await fetchEventSource(url)` |
+| Response | Single result | Single result | Multiple events |
+| Cancellation | Not supported | Not typical | Via `AbortController` |
+
+---
+
 ## Key Patterns
 
 ### 1. Validation First
@@ -167,11 +297,12 @@ export function useBehaviorName() {
 ## Constraints
 
 - NEVER import database clients or models
-- NEVER use `window.fetch` - always call server actions
-- NEVER put business logic in hooks - that belongs in actions
+- NEVER call more than one backend entry point (action or route)
+- NEVER put business logic in hooks - that belongs in actions/routes
 - ALWAYS include both loading and error states
-- ALWAYS validate input before calling server actions
-- ALWAYS implement optimistic updates for better UX
+- ALWAYS validate input before calling backend
+- ALWAYS implement optimistic updates for better UX (actions)
+- ALWAYS support cancellation for streaming behaviors (routes)
 
 ## Example Specification
 

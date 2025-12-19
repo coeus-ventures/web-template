@@ -1,157 +1,73 @@
 ---
 name: write-route
-description: Write API routes following the Epic architecture patterns. Use when creating REST endpoints, webhooks, or server-side route handlers. Triggers on "create a route", "add an API endpoint", or "write a route for".
+description: Write routes following the Epic architecture patterns. Use when creating HTTP endpoints for behaviors, webhooks, or streaming. Triggers on "create a route", "add a webhook", or "write a route for".
 ---
 
 # Write Route
 
 ## Overview
 
-This skill creates API routes that follow the Epic three-layer architecture. Routes belong to the **Backend layer** and handle HTTP requests, authentication, and orchestration of model/integration calls.
+This skill creates routes that follow the Epic three-layer architecture. Routes belong to the **Backend layer** and provide HTTP endpoints for behaviors that need HTTP semantics, streaming, or external access.
+
+A behavior has either an action OR a route, not both.
 
 ## Architecture Context
 
 ```
-External Client: HTTP Request
-                   |
-                   v
-Backend: API Routes (auth + validation + orchestration)
-                   |
-                   v
+Frontend: Hook (via fetch or fetchEventSource)
+              |
+              v (HTTP)
+Backend: Route (request/response or streaming)
+              |
+              v
 Infrastructure: Models + Integrations
 ```
 
 Routes:
-- Run on the server (Backend layer)
-- Handle HTTP methods (GET, POST, PUT, DELETE)
-- Check authentication when required
-- Validate request data
-- Call models for data operations
-- Return proper HTTP responses
+- Live inside behavior folders
+- Handle HTTP requests (GET, POST, etc.)
+- Support streaming via SSE (optional)
+- Can serve as webhooks for external integrations
+- NEVER accessed directly by components
+
+## When to Use Routes
+
+| Use Route | Use Action |
+|-----------|------------|
+| Streaming/SSE needed | Most behaviors |
+| Webhooks (Stripe, etc.) | Direct function calls |
+| Need HTTP headers/status | Simpler mental model |
+| External client access | Internal operations |
 
 ## Route Location
 
 ```
-app/api/
-  [resource]/
-    route.ts              # Handles /api/[resource]
-    [id]/
-      route.ts            # Handles /api/[resource]/[id]
+app/[page]/behaviors/[behavior-name]/
+  route.ts                    # HTTP endpoint
+  use-[behavior-name].ts      # Hook that consumes it
 ```
 
-## Function Specification Format
-
-Follow the Epic Function specification format:
-
-```markdown
-## GET /api/projects
-
-Returns all projects for the authenticated user.
-
-- Given: authenticated user with valid session
-- Returns: array of projects
-- Calls: ProjectModel.findByUserId
-
-### Example: List user projects
-
-#### PreDB
-projects:
-id, user_id, name
-1, 1, Project A
-2, 1, Project B
-
-#### PostDB
-(no changes - read operation)
-
-Response: { success: true, data: [{ id: 1, name: "Project A" }, ...] }
+The route URL follows the folder path:
+```
+app/(app)/projects/behaviors/generate-spec/route.ts
+-> POST /projects/behaviors/generate-spec
 ```
 
-## Implementation Pattern
+---
+
+## Non-Streaming Route Pattern
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth';
-import { Model } from '@/shared/models/model-name';
 import { z } from 'zod';
 
-// GET /api/resource
-export async function GET(request: NextRequest) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const data = await Model.findByUserId(user.id);
-    return NextResponse.json({ success: true, data });
-  } catch (error) {
-    console.error('GET /api/resource error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/resource
-const CreateSchema = z.object({
-  name: z.string().min(1).max(100),
+const InputSchema = z.object({
+  name: z.string().min(1),
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-    const validated = CreateSchema.parse(body);
-
-    const created = await Model.create({
-      ...validated,
-      userId: user.id,
-    });
-
-    return NextResponse.json(
-      { success: true, data: created },
-      { status: 201 }
-    );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.errors[0].message },
-        { status: 400 }
-      );
-    }
-    console.error('POST /api/resource error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-```
-
-## Dynamic Route Pattern
-
-```typescript
-// app/api/resource/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-
-interface RouteParams {
-  params: { id: string };
-}
-
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
-
+  // 1. Check authentication
   const user = await getUser();
   if (!user) {
     return NextResponse.json(
@@ -160,30 +76,90 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  const item = await Model.findById(id);
-  if (!item) {
+  // 2. Validate input
+  const body = await request.json();
+  const result = InputSchema.safeParse(body);
+  if (!result.success) {
     return NextResponse.json(
-      { success: false, error: 'Not found' },
-      { status: 404 }
+      { success: false, error: result.error.errors[0].message },
+      { status: 400 }
     );
   }
 
-  // Check ownership
-  if (item.userId !== user.id) {
-    return NextResponse.json(
-      { success: false, error: 'Forbidden' },
-      { status: 403 }
-    );
-  }
+  // 3. Execute logic
+  const data = await someIntegration.process(result.data);
 
-  return NextResponse.json({ success: true, data: item });
+  return NextResponse.json({ success: true, data });
 }
 ```
+
+---
+
+## Streaming Route Pattern (SSE)
+
+```typescript
+import { NextRequest } from 'next/server';
+import { getUser } from '@/lib/auth';
+import { z } from 'zod';
+
+const InputSchema = z.object({
+  prompt: z.string().min(1),
+});
+
+export async function POST(request: NextRequest) {
+  // 1. Check authentication
+  const user = await getUser();
+  if (!user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // 2. Validate input
+  const body = await request.json();
+  const result = InputSchema.safeParse(body);
+  if (!result.success) {
+    return new Response(result.error.errors[0].message, { status: 400 });
+  }
+
+  // 3. Create streaming response
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
+  const encoder = new TextEncoder();
+
+  const sendEvent = async (event: string, data: string) => {
+    await writer.write(
+      encoder.encode(`event: ${event}\ndata: ${data}\n\n`)
+    );
+  };
+
+  // 4. Start async processing
+  (async () => {
+    try {
+      for await (const chunk of generateContent(result.data.prompt)) {
+        await sendEvent('token', chunk);
+      }
+      await sendEvent('complete', '');
+    } catch (error) {
+      await sendEvent('error', error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      await writer.close();
+    }
+  })();
+
+  return new Response(stream.readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+```
+
+---
 
 ## Webhook Pattern
 
 ```typescript
-// app/api/webhooks/stripe/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/shared/integrations/stripe';
 
@@ -222,52 +198,93 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-## HTTP Status Codes
+---
 
-- `200` - Success (GET, PUT, PATCH)
-- `201` - Created (POST)
-- `204` - No Content (DELETE)
-- `400` - Bad Request (validation error)
-- `401` - Unauthorized (no auth)
-- `403` - Forbidden (no permission)
-- `404` - Not Found
-- `500` - Internal Server Error
+## Specification Format
+
+### Non-Streaming Route Spec
+
+```markdown
+# Process Data Route
+
+**Method:** POST
+**Path:** /projects/behaviors/process-data
+
+## Description
+
+Processes uploaded data and returns results.
+
+## Input
+
+- fileId: string - ID of the uploaded file
+
+## Returns
+
+- success: boolean
+- data: ProcessedResult
+
+## Examples
+
+### Process successfully
+
+#### Input
+fileId: "file-123"
+
+#### Response
+{ success: true, data: { ... } }
+```
+
+### Streaming Route Spec
+
+```markdown
+# Generate Specification Route
+
+**Method:** POST
+**Path:** /projects/behaviors/generate-spec
+
+## Description
+
+Generates a project specification incrementally.
+
+## Behavior
+
+- Implements: Generate Specification
+
+## Input
+
+- prompt: string - user description of the project
+
+## Emitted Events
+
+- token - partial generated text
+- complete - generation finished
+
+## Completion
+
+- Success: emits `complete`, then closes stream
+- Error: emits `error`, then closes stream
+
+## Examples
+
+### Generate specification successfully
+
+#### Input
+prompt: "Project management app"
+
+#### Stream
+* Emit: token - "# Project Management App"
+* Emit: token - "\n## Pages"
+* Emit: complete - ""
+```
+
+---
 
 ## Constraints
 
 - NEVER import React, Jotai, or frontend code
-- NEVER access database directly - use models
-- ALWAYS check authentication when required
-- ALWAYS validate request body with Zod
-- ALWAYS return consistent response format
-- ALWAYS use proper HTTP status codes
-- ALWAYS log errors for debugging
-
-## Example Specification
-
-```markdown
-## POST /api/projects
-
-Creates a new project for the authenticated user.
-
-- Given: valid project data and authenticated user
-- Returns: created project with 201 status
-- Calls: ProjectModel.create
-
-### Example: Create project successfully
-
-#### PreDB
-projects:
-id, user_id, name
-(empty)
-
-Request: { name: "New Project" }
-
-#### PostDB
-projects:
-id, user_id, name, created_at
-1, 1, New Project, <timestamp>
-
-Response: { success: true, data: { id: 1, name: "New Project", ... } }
-Status: 201
-```
+- NEVER access database directly - use models/integrations
+- ALWAYS check authentication (except webhooks with signature verification)
+- ALWAYS validate input with Zod
+- ALWAYS handle errors gracefully
+- ALWAYS close streams when done (for SSE)
+- Event names are route-specific, not prescribed globally

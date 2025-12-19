@@ -50,8 +50,8 @@
 
 | Component | Responsibility |
 |-----------|----------------|
-| **Actions** | Auth-aware business logic, orchestrate Integrations |
-| **Routes** | API endpoints and server-side routing |
+| **Actions** | Server Actions for behaviors (direct import, RPC-style) |
+| **Routes** | HTTP endpoints for behaviors (fetch-based, supports streaming) |
 | **Workflows** | Long-running background jobs/processes |
 
 **May import**: Integrations, Models, auth/context utilities
@@ -91,6 +91,85 @@ Component -> Hook -> Action -> Integration -> Database
 
 ---
 
+## Action vs Route
+
+Every behavior has exactly one backend entry point: an Action or a Route.
+
+| Aspect | Action | Route |
+|--------|--------|-------|
+| Protocol | Server Action (direct import) | HTTP endpoint (fetch-based) |
+| Invocation | `await action(input)` | `fetch()` or `fetchEventSource()` |
+| Streaming | No | Optional (SSE supported) |
+| File | `[name].action.ts` | `route.ts` |
+| Location | Behavior folder | Behavior folder |
+
+### When to Use Each
+
+**Action** (default):
+- Most behaviors
+- Direct function call semantics
+- Simpler mental model
+
+**Route**:
+- Streaming/SSE required
+- Webhooks (external integrations like Stripe)
+- Need HTTP semantics (headers, status codes)
+- External client access needed
+
+### Hook Consumption
+
+**Non-streaming route:**
+```typescript
+const response = await fetch(`/${page}/behaviors/${behavior}`, {
+  method: 'POST',
+  body: JSON.stringify(input),
+});
+const data = await response.json();
+```
+
+**Streaming route:**
+```typescript
+fetchEventSource(`/${page}/behaviors/${behavior}`, {
+  method: 'POST',
+  body: JSON.stringify(input),
+  signal: abortController.signal,
+  onmessage(event) {
+    // React to route-specific events
+  },
+});
+```
+
+---
+
+## Thin Client, Fat Server
+
+The frontend coordinates nothing. It triggers intent and reacts to outcomes.
+
+### Client Constraints
+
+- No hook may call more than one backend entry point
+- No component may call backend code directly
+- No frontend code may encode business rules
+- No orchestration, sequencing, or workflow logic
+
+### Server Constraints
+
+- Owns all business logic and orchestration
+- Owns sequencing, retries, and transactional boundaries
+- Owns integrations and domain rules
+
+### Review Heuristic
+
+> "Is the client deciding anything it shouldn't?"
+
+Violations:
+- Calling multiple backend endpoints from one hook
+- Branching based on backend semantics
+- Handling retries or error recovery strategy
+- Stitching partial backend results together
+
+---
+
 ## Import Rules Summary
 
 | From / To | Frontend | Backend | Infrastructure |
@@ -109,7 +188,7 @@ Component -> Hook -> Action -> Integration -> Database
 | Hooks | `app/[page]/behaviors/[name]/` | `use-[name].ts` |
 | States | `app/[page]/behaviors/[name]/` | `state.ts` |
 | Actions | `app/[page]/behaviors/[name]/` | `[name].action.ts` |
-| Routes | `app/api/` | `route.ts` |
+| Routes | `app/[page]/behaviors/[name]/` | `route.ts` |
 | Integrations | `shared/integrations/` | `[name].ts` |
 | Models | `shared/models/` | `[name].ts` |
 

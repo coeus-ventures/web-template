@@ -612,12 +612,140 @@ error: "Name is required"
 
 ---
 
+## 9. Route Specification Format
+
+Route specifications describe **HTTP endpoints** for behaviors that need HTTP semantics, streaming, or external access. They are the HTTP counterpart to Server Actions.
+
+### Purpose
+
+Route specifications answer:
+- What behavior does this route implement?
+- What input does it accept?
+- What does it return (or emit for streaming)?
+- When does it complete or fail?
+
+### Structure
+
+A route specification consists of:
+1. A heading naming the **route**
+2. The HTTP **method** and **path**
+3. A short description
+4. The **Behavior** it implements
+5. **Input** (request payload)
+6. **Returns** (for non-streaming) or **Emitted Events** (for streaming)
+7. **Examples**
+
+### Consumption
+
+Routes are consumed by hooks via `fetch` (non-streaming) or `fetchEventSource` (streaming).
+
+### Non-Streaming Route Example
+
+```markdown
+# Process Data Route
+
+**Method:** POST
+**Path:** /projects/behaviors/process-data
+
+## Description
+
+Processes uploaded data and returns results.
+
+## Behavior
+
+- Implements: Process Data
+
+## Input
+
+- fileId: string - ID of the uploaded file
+
+## Returns
+
+- success: boolean
+- data: ProcessedResult
+
+## Examples
+
+### Process successfully
+
+#### Input
+fileId: "file-123"
+
+#### Response
+{ success: true, data: { processedAt: "...", items: [...] } }
+
+### Invalid file
+
+#### Input
+fileId: ""
+
+#### Response
+{ success: false, error: "File ID is required" }
+```
+
+### Streaming Route Example
+
+For streaming routes, use `Emit:` to describe events sent over the stream:
+
+```markdown
+# Generate Specification Route
+
+**Method:** POST
+**Path:** /projects/behaviors/generate-spec
+
+## Description
+
+Generates a project specification incrementally.
+
+## Behavior
+
+- Implements: Generate Specification
+
+## Input
+
+- prompt: string - user description of the project
+
+## Emitted Events
+
+- token - partial generated text
+- complete - generation finished
+
+## Completion
+
+- Success: emits `complete`, then closes stream
+- Error: emits `error`, then closes stream
+
+## Examples
+
+### Generate specification successfully
+
+#### Input
+prompt: "Project management app"
+
+#### Stream
+* Emit: token - "# Project Management App"
+* Emit: token - "\n## Pages"
+* Emit: complete - ""
+
+### Generation fails
+
+#### Input
+prompt: ""
+
+#### Stream
+* Emit: error - "Prompt is required"
+```
+
+---
+
 # Principles
 
 - Behavior is the bridge between Functional and Technical specs
 - Functional specs describe _what_, Technical specs describe _how_
 - Functional specs are hierarchical (Project → Flow → Page → Behavior)
-- Technical specs are a flat catalog (Function, Class, Component, Hook)
+- Technical specs are a flat catalog (Function, Class, Component, Hook, Route)
+- Thin Client, Fat Server: the client triggers intent, the server realizes it
+- One backend entry point per behavior (Action or Route, never both)
 - State ownership is always explicit
 - Omitted sections are meaningful
 - Formats are minimal and consistent

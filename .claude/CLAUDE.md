@@ -35,23 +35,29 @@ Features are organized by behavior:
 
 ```
 app/[page]/behaviors/[behavior-name]/
-  [behavior-name].action.ts      # Server action
+  [behavior-name].action.ts      # Server action (atomic)
+  route.ts                       # Route endpoint (streaming)
   use-[behavior-name].ts         # React hook
   state.ts                       # Behavior-specific state (optional)
   tests/
     [behavior-name].spec.ts      # E2E test
     [behavior-name].action.test.ts
+    [behavior-name].route.test.ts
 ```
+
+A behavior has either an action OR a route, not both.
 
 ## File Naming
 
 | Type | Pattern |
 |------|---------|
 | Server actions | `[name].action.ts` |
+| Routes | `route.ts` |
 | React hooks | `use-[name].ts` |
 | Components | `[Name].tsx` |
 | E2E tests | `[name].spec.ts` |
 | Action tests | `[name].action.test.ts` |
+| Route tests | `[name].route.test.ts` |
 | State files | `state.ts` |
 
 ## Commands

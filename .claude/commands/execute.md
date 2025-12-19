@@ -18,7 +18,7 @@ This build process leverages specialized agents for each layer of the architectu
 | **hook-writer** | Implements client hooks with state management and optimistic updates | Frontend |
 | **component-writer** | Creates UI components that consume hooks | Frontend |
 | **test-writer** | Writes all types of tests: behavior (.spec.ts), action (.action.test.ts), and hook (.test.tsx) | Testing |
-| **route-writer** | Creates API routes and server-side route handlers | Backend |
+| **route-writer** | Creates HTTP routes for behaviors, webhooks, or streaming | Backend |
 
 Each agent is an expert in their domain and follows the project's three-layer architecture patterns. They ensure consistency, include proper debug logging, and handle errors appropriately.
 
