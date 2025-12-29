@@ -21,17 +21,17 @@ module.exports = function autoTracerPlugin({ types: t }) {
 
   function isLibraryFunction(name) {
     if (name.length <= 3) return true;
-    
+
     if (name.startsWith('_')) return true;
-    
+
+    // Skip all hooks (use* convention) - but inner functions will still be traced
+    if (/^use[A-Z]/.test(name)) return true;
+
     const blocked = [
-      'useEffect', 'useState', 'useCallback', 'useMemo', 'useRef',
-      'useContext', 'useReducer', 'useLayoutEffect', 'useId',
-      'useTransition', 'useDeferredValue', 'useActionState',
       'render', 'hydrate', 'createElement', 'forwardRef', 'memo', 'lazy',
       'clsx', 'twMerge', 'classNames'
     ];
-    
+
     return blocked.includes(name);
   }
 
@@ -97,7 +97,7 @@ module.exports = function autoTracerPlugin({ types: t }) {
         path.node.body.unshift(
           t.importDeclaration(
             [t.importSpecifier(t.identifier('__trace'), t.identifier('__trace'))],
-            t.stringLiteral('@/lib/autotracer')
+            t.stringLiteral('@/plugins/autotracer/runtime')
           )
         );
       },
