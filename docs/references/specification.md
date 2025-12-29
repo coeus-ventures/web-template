@@ -11,7 +11,7 @@ Project → Flow → Page → Behavior
 **Technical Specifications** describe *how the system is built* from the developer's perspective. They are a flat catalog of implementation units:
 
 ```
-Function | Class | Component | Hook
+Function | Class | Component | Hook | Workflow
 ```
 
 **Behavior is the bridge between both.** It is the leaf of the Functional hierarchy and the unit that Technical specs reference. All specifications are written in concise, human-readable Markdown.
@@ -228,8 +228,9 @@ A behavior specification consists of:
 1. A top-level heading naming the **behavior**
 2. A one-paragraph description
 3. The behavior directory
-4. A **Rules** section - named rules with When/Then conditions
-5. An **Examples** section - concrete scenarios demonstrating the behavior
+4. A **Dependencies** section (optional) - ordered list of prerequisite behaviors
+5. A **Rules** section - named rules with When/Then conditions
+6. An **Examples** section - concrete scenarios demonstrating the behavior
 
 Each example may include:
 - **PreDB** (optional) - system state before the behavior
@@ -241,6 +242,22 @@ Each example may include:
 Steps use prefixes to distinguish actions from verifications:
 - **Act:** - user or system performs an action (changes state)
 - **Check:** - verification that something is true (asserts state)
+
+### Dependencies Section
+
+The optional Dependencies section lists behaviors that must be completed before the current behavior can be performed. This is useful for:
+- Documenting prerequisite behaviors in flows
+- Test generation (ensuring setup steps are run)
+- Understanding behavior ordering in the system
+
+Dependencies are listed as an ordered list of behavior names:
+
+```markdown
+## Dependencies
+
+1. Create Project
+2. View Project
+```
 
 ### Example
 
@@ -329,6 +346,63 @@ id, user_id, name, status
 * Act: User submits the create project form with name "Existing Project"
 * Check: Error "Project name already exists" is shown
 * Check: No new project is created
+```
+
+### Example with Dependencies
+
+```markdown
+# Add Team Member
+
+Allows a project owner to add a team member to their project.
+Directory: `pages/projects/behaviors/add-team-member/`
+
+## Dependencies
+
+1. Create Project
+2. View Project
+
+## Rules
+
+### Project Must Exist
+- When:
+  - Project does not exist
+- Then:
+  - Reject with "Project not found"
+
+### Owner Only
+- When:
+  - User is not the project owner
+- Then:
+  - Reject with "Only the project owner can add members"
+
+## Examples
+
+### Owner adds team member successfully
+
+#### PreDB
+users:
+id, email, role
+1, owner@example.com, client
+2, member@example.com, client
+
+projects:
+id, user_id, name
+1, 1, My Project
+
+project_members:
+id, project_id, user_id
+(empty)
+
+#### Steps
+* Act: User logs in as "owner@example.com"
+* Act: User navigates to project details page
+* Act: User submits add member form with email "member@example.com"
+* Check: Member appears in team list
+
+#### PostDB
+project_members:
+id, project_id, user_id
+1, 1, 2
 ```
 
 **Rules** are named declarative constraints with When/Then conditions. Each rule has a descriptive name, a list of conditions (When), and a list of outcomes (Then). Multiple conditions are implicitly AND. For OR logic, create separate rules. **Examples** demonstrate how the behavior plays out in concrete scenarios. Steps focus on **observable behavior**, not implementation details.
@@ -444,6 +518,11 @@ A class specification consists of:
 3. **Properties** (state)
 4. **Methods** (which may reference Function specs)
 5. Optional **relationships** (extends, implements, composes)
+6. Optional **Examples** showing usage scenarios
+
+### Examples Section
+
+Not every method needs an example. Include examples for key usage scenarios that demonstrate how the class is used in practice. Examples follow the same PreDB/Steps/PostDB format as other specs.
 
 ### Example
 
@@ -466,6 +545,40 @@ Manages project lifecycle operations including creation, updates, and deletion.
 ## Relationships
 - Implements: IProjectService
 - Composes: ProjectValidator, Database
+
+## Examples
+
+### Create a new project
+
+#### PreDB
+projects:
+id, name, status
+(empty)
+
+#### Steps
+* Call: service.create({ name: "New Project" })
+* Returns: { id: 1, name: "New Project", status: "draft" }
+
+#### PostDB
+projects:
+id, name, status
+1, New Project, draft
+
+### Reject duplicate project name
+
+#### PreDB
+projects:
+id, name, status
+1, Existing Project, active
+
+#### Steps
+* Call: service.create({ name: "Existing Project" })
+* Throws: "Project name already exists"
+
+#### PostDB
+projects:
+id, name, status
+1, Existing Project, active
 ```
 
 ---
@@ -738,12 +851,144 @@ prompt: ""
 
 ---
 
+## 10. Workflow Specification Format
+
+Workflow specifications describe **durable, multi-step background processes** that survive failures and can resume from checkpoints. They are implementation-agnostic and can be realized using systems like Inngest, Trigger.dev, or useworkflow.
+
+### Purpose
+
+Workflow specifications answer:
+- What behavior does this workflow implement?
+- What input does it accept?
+- What steps execute durably?
+- What gets persisted at each checkpoint?
+- What are the success and failure outcomes?
+
+### When to Use Workflows
+
+Use a workflow instead of an action when:
+- The process is long-running (seconds to days)
+- Failure recovery is critical (must resume, not restart)
+- Multiple external calls need atomic checkpointing
+- The process involves waiting (sleep, webhooks, external events)
+
+### Structure
+
+A workflow specification consists of:
+1. A heading naming the **workflow**
+2. A short description explaining why durability is needed
+3. The **Behavior** it implements
+4. **Input** it accepts
+5. **Steps** - ordered, atomic units with what each persists
+6. **Completion** - success and failure outcomes
+7. **Examples** showing step-by-step execution
+
+### Steps Section
+
+Each step represents a durable checkpoint. If the workflow fails after a step completes, it resumes from the next step, not from the beginning. Include:
+- What the step does
+- What it persists (the checkpoint data)
+- Optional retry policy if non-default
+
+### Example
+
+```markdown
+# Process Order Workflow
+
+Handles order processing with payment and fulfillment. Requires durability because payment and shipping are external calls that must not be duplicated on retry.
+
+## Behavior
+
+- Implements: Process Order
+
+## Input
+
+- orderId: string - ID of the order to process
+
+## Steps
+
+### 1. Validate Order
+Checks order exists and is in valid state for processing.
+- Persists: validatedOrder
+
+### 2. Process Payment
+Calls payment integration to charge the customer.
+- Persists: paymentResult
+- Retry: 3 attempts with exponential backoff
+
+### 3. Reserve Inventory
+Reserves items in the warehouse system.
+- Persists: reservationId
+
+### 4. Send Confirmation
+Sends order confirmation email to customer.
+- Persists: emailSent
+
+## Completion
+
+- Success: Order status set to "confirmed", customer notified
+- Failure: Order status set to "failed", payment reversed if charged, admin notified
+
+## Examples
+
+### Process order successfully
+
+#### PreDB
+orders:
+id, status, total
+1, pending, 99.00
+
+payments:
+id, order_id, status
+(empty)
+
+#### Steps
+* Step: Validate Order completes
+  - Persists: { orderId: 1, total: 99.00, items: [...] }
+* Step: Process Payment completes
+  - Persists: { chargeId: "ch_123", status: "succeeded" }
+* Step: Reserve Inventory completes
+  - Persists: { reservationId: "res_456" }
+* Step: Send Confirmation completes
+  - Persists: { emailSent: true }
+
+#### PostDB
+orders:
+id, status, total
+1, confirmed, 99.00
+
+payments:
+id, order_id, status
+1, 1, succeeded
+
+### Payment fails and workflow compensates
+
+#### PreDB
+orders:
+id, status, total
+1, pending, 99.00
+
+#### Steps
+* Step: Validate Order completes
+  - Persists: { orderId: 1, total: 99.00, items: [...] }
+* Step: Process Payment fails
+  - Throws: "Card declined"
+* Compensation: Order marked as failed
+
+#### PostDB
+orders:
+id, status, total
+1, failed, 99.00
+```
+
+---
+
 # Principles
 
 - Behavior is the bridge between Functional and Technical specs
 - Functional specs describe _what_, Technical specs describe _how_
 - Functional specs are hierarchical (Project → Flow → Page → Behavior)
-- Technical specs are a flat catalog (Function, Class, Component, Hook, Route)
+- Technical specs are a flat catalog (Function, Class, Component, Hook, Route, Workflow)
 - Thin Client, Fat Server: the client triggers intent, the server realizes it
 - One backend entry point per behavior (Action or Route, never both)
 - State ownership is always explicit
