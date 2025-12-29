@@ -1,8 +1,6 @@
 {
   "presets": ["next/babel"],
   "plugins": [
-    ["./plugins/babel-plugin-autotracer.js", {
-      "only": ["**/playground/**"]
-    }]
+    ["./plugins/babel-plugin-autotracer.js"]
   ]
 }

@@ -16,7 +16,7 @@ module.exports = function autoTracerPlugin({ types: t }) {
     if (normalized.includes('node_modules')) return false;
     if (normalized.includes('.next')) return false;
     
-    return normalized.includes('/behaviors/') || normalized.includes('/playground/');
+    return normalized.includes('/behaviors/');
   }
 
   function isLibraryFunction(name) {
