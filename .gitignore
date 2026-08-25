@@ -74,3 +74,14 @@ next-env.d.ts
 /ecosystem.config.js
 /.epic/settings.json
 /.epic/settings.local.json
+
+# The harness's own bootstrap and per-session state, baked/written beside this
+# checkout by the sandbox image — never part of the project. No trailing slash
+# on either: `.harness-bootstrap` is a real directory beside a plain checkout
+# but a *symlink* inside a prototype screen's worktree (see epic-build's
+# screen-git.ts), and a trailing slash ("directory only") would miss the
+# symlink shape and let `git add -A` stage it — which is exactly how one
+# build committed a 250MB+ file from its pnpm store and got its push rejected
+# by GitHub's size limit.
+.harness-bootstrap
+.agent-runs
