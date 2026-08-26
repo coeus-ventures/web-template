@@ -52,7 +52,7 @@ If no such file exists, run `bun run db:seed` (safe to re-run; reconciles in pla
 - Assign one distinct user per scenario, round-robin by scenario order (`userSeeds[(N - 1) % userSeeds.length]`). One user per scenario keeps data created by one scenario from bleeding into the next. With 5 seeded users, the first five scenarios each get a unique user.
 - **One browser session at a time.** Each `--session <name>` is a FULL Chrome instance, and the sandbox has a hard memory cgroup shared with two dev servers — parallel sessions get the OOM killer shooting Chrome and the servers mid-scenario (symptoms: pages stuck on "Loading...", "Under Construction" for routes that exist, sign-ins that never land). Run scenarios sequentially in one session, and when the next scenario needs a different user, `npx agent-browser --session <name> close` the previous session (or just sign out) BEFORE opening the next. Never keep more than one session alive.
 - **Never `pkill` the dev/next servers as memory triage** — the preview you are verifying against is one of them; killing it destroys your own test target and its compiled routes. Close browser sessions instead; that's where the memory goes.
-- To authenticate, navigate to the signin page and fill the assigned user's `email` and `password`, then submit and confirm the redirect to the authenticated home page before proceeding with the scenario's steps.
+- To authenticate, navigate to the signin page, confirm it hydrated (see [Wait for hydration before the first fill on a fresh navigation](#wait-for-hydration-before-the-first-fill-on-a-fresh-navigation)), fill the assigned user's `email` and `password` — re-snapshotting to confirm each value stuck before moving on — then submit and confirm the redirect to the authenticated home page before proceeding with the scenario's steps. A submit that fires no network request and leaves you on the signin page is this hydration race, not a broken feature; re-fill and retry before reporting anything as FAIL.
 
 ## Setting up scenario state
 
@@ -110,6 +110,35 @@ In the sandbox, `agent-browser` and its Chrome for Testing build are pre-provisi
 ```bash
 npx agent-browser install
 ```
+
+### Wait for hydration before the first fill on a fresh navigation
+
+Right after `open`/`goto` (and this matters most for the signin page, since it's
+almost always the first navigation of a session), the HTML is server-rendered
+but React hasn't attached its event handlers yet. `fill` on an unhydrated input
+sets the DOM value directly — then hydration reconciles the field back to
+React's own (empty) controlled-input state, silently reverting what you typed.
+The symptom is exact: `snapshot` right after `fill` shows the value you set,
+but `screenshot` a moment later shows the placeholder again, `click` on submit
+fires no network request, and there's no console error — because nothing
+actually broke, the fill just landed before the page could hold it. A sandbox's
+proxied preview URL and shared CPU make this slower — and the race easier to
+lose — than it is on an idle local machine, so do not assume a pass locally
+means this can't happen here.
+
+Confirm the page hydrated before the first interaction after any navigation:
+
+```bash
+npx agent-browser eval "[...document.querySelectorAll('*')].some(el => Object.keys(el).some(k => k.startsWith('__react')))"
+```
+
+If that comes back `false`, wait and re-check rather than filling anyway — a
+fixed `sleep` is a guess about a machine you don't control; polling the actual
+signal is not. Once it's `true`, treat the *value sticking* as the real
+confirmation, not just having called `fill`: after filling a field, `snapshot`
+again and check the ref still shows your text before moving to the next field
+or clicking submit. A reverted field means you filled ahead of hydration —
+re-fill it, don't just retry the click.
 
 ### Quick start
 
