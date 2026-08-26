@@ -7,6 +7,8 @@ description: Repair a web issue's implementation so its failing verify scenarios
 
 You are repairing a web issue's implementation so that its failing verify scenarios pass on the next verify run. Plan and execute have already run in this session, so you have the ephemeral issue buffer, the plan, and the implementation context loaded — focus only on the failures the user hands you.
 
+There is no separate fix server to boot: the preview you check your changes against is already running (supervisor-managed in the sandbox; `epic preview start` locally). If it doesn't respond, wait a moment and retry — **never start a second dev server, and never `pkill`/`kill` the dev or `next` process as troubleshooting.** It is the same server serving the page you are about to check; killing it destroys your own test target and its compiled routes, and starting a second one on the same port fails with `EADDRINUSE` and proves nothing.
+
 ## Workflow
 
 1. Re-read the issue buffer's `## Behavior: <name>` block to ground yourself in the rules and scenarios the failures are derived from.
