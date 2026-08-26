@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
     "*.http.cloud.morph.so",
     "*.epic.new",
     "*.lvh.me",
+    "*.daytonaproxy01.net",
   ],
   // Pin the Turbopack root to this checkout. Git worktrees live inside the
   // repo (.worktrees/*), so lockfile inference would otherwise resolve the
