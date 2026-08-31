@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
+import { PreviewBridge } from "@/components/preview-bridge";
+import { PreviewToolbarLoader } from "@/components/preview-toolbar-loader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,6 +42,18 @@ export default function RootLayout({
               One Toaster, at the root, is also what the styleguide page has
               always told readers this template does. */}
           <Toaster />
+          {/* The preview's half of the postMessage bridge: it tells the Epic
+              workspace where this frame is, and answers its two questions.
+              Inert outside an iframe. Removing it blanks the workspace's
+              address bar and breaks screen switching — see
+              docs/references/preview-bridge.md in the prototype template. */}
+          <PreviewBridge />
+          {/* Pulls the annotation toolbar from the workspace that framed this
+              preview. Unlike the bridge above, this one is safe to delete: the
+              app works without it, and the toolbar it loads is served by
+              Epic rather than living here — which is how a machine built from
+              an old snapshot can still receive a fixed one. */}
+          <PreviewToolbarLoader />
         </Providers>
       </body>
     </html>
